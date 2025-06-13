@@ -57,6 +57,11 @@ val iconSize = 30.dp
 val smallIconSize = 20.dp
 val barHeight = 84.dp
 
+val textPadding = 14.dp
+val boxPadding = 16.dp
+
+val cornerRadius = 5.dp
+
 @Composable
 fun PshashTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
