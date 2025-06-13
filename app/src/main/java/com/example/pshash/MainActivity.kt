@@ -1,5 +1,6 @@
 package com.example.pshash
 
+import android.graphics.Paint.Align
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,8 +34,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -76,6 +79,7 @@ import com.example.pshash.ui.theme.iconSize
 import com.example.pshash.ui.theme.PurpleGrey80
 import com.example.pshash.ui.theme.boxPadding
 import com.example.pshash.ui.theme.cornerRadius
+import com.example.pshash.ui.theme.smallIconSize
 import com.example.pshash.ui.theme.textPadding
 
 class MainActivity : ComponentActivity() {
@@ -110,7 +114,7 @@ fun TopLevel (
     if (inInfo.value) {
         InfoContent(inInfo)
     } else if (inMenu.value) {
-        MenuContent(inMenu, inInfo)
+        MenuContent(inMenu, inInfo, currentScreen)
     } else {
         if (currentScreen.intValue == generateScreenId) {
             GeneratePasswordContent(inMenu, inInfo, currentPoint, generated, password, config, public, choice, shuffle)
@@ -119,9 +123,46 @@ fun TopLevel (
 }
 
 @Composable
+fun MenuButton(
+    text: String,
+    icon: ImageVector,
+    inMenu: MutableState<Boolean>,
+    currentScreen: MutableIntState,
+    setTo: Int
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .clickable {
+                currentScreen.intValue = setTo
+                inMenu.value = false
+            }
+    ) {
+        Text(
+            text = text,
+            fontSize = 20.sp,
+            modifier = Modifier
+                .padding(start = boxPadding + 10.dp)
+        )
+        Icon(
+            imageVector = icon,
+            contentDescription = "Icon",
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .padding(end = boxPadding + 10.dp)
+                .size(smallIconSize)
+        )
+    }
+}
+
+@Composable
 fun MenuContent(
     inMenu: MutableState<Boolean>,
-    inInfo: MutableState<Boolean>
+    inInfo: MutableState<Boolean>,
+    currentScreen: MutableIntState
 ) {
     Scaffold(
         topBar = {
@@ -137,10 +178,16 @@ fun MenuContent(
             )
         }
     ) { innerPadding ->
-        Text(
-            "In the menu!",
-            modifier = Modifier.padding(innerPadding)
-        )
+        Column(
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.secondary)
+        ) {
+            MenuButton("generate password", Icons.Rounded.Build, inMenu, currentScreen, generateScreenId)
+        }
     }
 }
 
@@ -295,6 +342,12 @@ fun ConfigSelector(
     ) {
         SelectorTitle("choose configuration")
         HorizontalDivider()
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(15.dp)
+                .background(MaterialTheme.colorScheme.tertiary)
+        )
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -321,6 +374,12 @@ fun ConfigSelector(
                 }
             }
         }
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(15.dp)
+                .background(MaterialTheme.colorScheme.tertiary)
+        )
         HorizontalDivider()
         BottomRow(currentPoint, nextVal = 2, prevVal = 1)
     }

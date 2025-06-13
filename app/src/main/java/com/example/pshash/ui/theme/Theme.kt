@@ -54,7 +54,7 @@ val DarkColorScheme = lightColorScheme(
 )
 
 val iconSize = 30.dp
-val smallIconSize = 20.dp
+val smallIconSize = 24.dp
 val barHeight = 84.dp
 
 val textPadding = 14.dp
