@@ -22,7 +22,7 @@ fun isValidPrivateKey(
     var count = 0
     for (c in key) {
         count += 1
-        if (c == '-') {
+        if (c == '^') {
             if (dashCount > 0 || count == 1 || count == key.length) return false
             dashCount += 1
             continue
@@ -46,7 +46,7 @@ fun getPublicKey(
 fun getPrivateKey(
     keyStr: String
 ) : BigInteger {
-    val parts = keyStr.split("-", limit = 2)
+    val parts = keyStr.split("^", limit = 2)
     if (parts.size == 1) return parts[0].toBigInteger()
     if (parts.size != 2) return bigZero
     val base = tbi(parts[0].toInt())

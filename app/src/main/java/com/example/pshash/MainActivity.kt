@@ -167,7 +167,7 @@ fun MenuContent(
     Scaffold(
         topBar = {
             FunctionTopBar(
-                title = "available functions",
+                title = "capabilities",
                 leftIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 leftDesc = "Menu",
                 leftCallback = { inMenu.value = false },
@@ -366,7 +366,7 @@ fun ConfigSelector(
                 ) {
                     Text(
                         text = displayConfiguration(item),
-                        fontSize = 20.sp,
+                        fontSize = 16.sp,
                         fontFamily = FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier
@@ -405,23 +405,22 @@ fun PublicSelector(
         ) {
             val keyModifier = Modifier
                 .padding(
-                    start = 10.dp,
-                    end = 10.dp,
-                    top = 12.dp,
-                    bottom = 12.dp
+                    vertical = 10.dp,
+                    horizontal = 9.dp
                 )
-            LetterRow("1234567890".toList(), text, keyModifier)
-            LetterRow("qwertyuiop".toList(), text, keyModifier)
-            LetterRow("asdfghjkl".toList(), text, keyModifier)
-            LetterRow("zxcvbnm.-".toList(), text, keyModifier)
+            LetterRow("1234567890".toList().map { c -> c.toString() }, text, keyModifier)
+            LetterRow("qwertyuiop".toList().map { c -> c.toString() }, text, keyModifier)
+            LetterRow("asdfghjkl".toList().map { c -> c.toString() }, text, keyModifier)
+            LetterRow("zxcvbnm.-".toList().map { c -> c.toString() }, text, keyModifier)
             Row(
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 10.dp)
+//                    .padding(end = 10.dp)
             ) {
-                KeyboardKey("delete", keyModifier, { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
+                KeyboardKey("clear", keyModifier, { text.value = "" })
+                KeyboardKey("⌫", Modifier.padding(vertical = 10.dp, horizontal = 26.dp), { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
             }
         }
         HorizontalDivider()
@@ -452,24 +451,61 @@ fun PrivateSelector(
         ) {
             val keyModifier = Modifier
                 .padding(
-                    start = 30.dp,
-                    end = 30.dp,
-                    top = 20.dp,
-                    bottom = 20.dp
+                    vertical = 16.dp,
+                    horizontal = 16.dp
                 )
-            LetterRow("789".toList(), text, keyModifier)
-            LetterRow("456".toList(), text, keyModifier)
-            LetterRow("123".toList(), text, keyModifier)
+                .width(25.dp)
+            val horizontalArrangement = Arrangement.SpaceEvenly
+            @Composable
+            fun RegularKey(
+                key: String
+            ) {
+                KeyboardKey(key, keyModifier, { text.value = "${text.value}$key" })
+            }
             Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = horizontalArrangement,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 10.dp)
             ) {
-                KeyboardKey("-", keyModifier, { text.value = "${text.value}-" })
-                KeyboardKey("delete", keyModifier, { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
+                RegularKey("7")
+                RegularKey("8")
+                RegularKey("9")
+                RegularKey("^")
             }
+            Row(
+                horizontalArrangement = horizontalArrangement,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                RegularKey("4")
+                RegularKey("5")
+                RegularKey("6")
+                KeyboardKey("⌫", keyModifier, { text.value = text.value.drop(1) })
+            }
+            Row(
+                horizontalArrangement = horizontalArrangement,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                RegularKey("1")
+                RegularKey("2")
+                RegularKey("3")
+                KeyboardKey("cl", keyModifier, { text.value = "" })
+            }
+//            Row(
+//                horizontalArrangement = Arrangement.SpaceEvenly,
+//                verticalAlignment = Alignment.CenterVertically,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(end = 10.dp)
+//            ) {
+//                KeyboardKey("-", keyModifier, { text.value = "${text.value}-" })
+//                KeyboardKey("clear", keyModifier, { text.value = "" })
+//                KeyboardKey("del", keyModifier, { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
+//            }
         }
         HorizontalDivider()
         BottomRow(currentPoint, nextVal = nextVal, prevVal = prevVal)
@@ -507,7 +543,7 @@ fun PasswordGenerator(
                 val copied = remember { mutableStateOf(false) }
                 Text(
                     text = if (copied.value) "copied!" else "copy to clipboard",
-                    fontSize = 22.sp,
+                    fontSize = 20.sp,
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
@@ -535,9 +571,9 @@ fun PasswordGenerator(
 
 @Composable
 fun LetterRow(
-    letters: List<Char>,
+    letters: List<String>,
     text: MutableState<String>,
-    keyModifier: Modifier
+    keyModifier: Modifier,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -546,7 +582,13 @@ fun LetterRow(
             .fillMaxWidth()
     ) {
         for (letter in letters) {
-            KeyboardKey("$letter", keyModifier, { text.value = "${text.value}$letter" })
+            KeyboardKey(
+                letter,
+                keyModifier,
+                {
+                    text.value = "${text.value}$letter"
+                }
+            )
         }
     }
 }
@@ -560,7 +602,7 @@ fun KeyboardKey(
     var isKeyPressed by remember { mutableStateOf(false) }
     Text(
         text = key,
-        fontSize = 20.sp,
+        fontSize = 19.sp,
         fontFamily = FontFamily.Monospace,
         color = if (isKeyPressed) PurpleGrey80 else MaterialTheme.colorScheme.onPrimary,
         modifier = Modifier
@@ -656,7 +698,7 @@ fun TextBox(
     ) {
         Text(
             text = realText,
-            fontSize = 18.sp,
+            fontSize = 16.sp,
             modifier = Modifier
                 .padding(top = textPadding, bottom = textPadding, start = textPadding)
                 .alpha(if (text.isEmpty()) 0.5f else 1f)
@@ -676,7 +718,7 @@ fun BottomButton(
             .width(200.dp)
     ) {
         Text(
-            fontSize = 22.sp,
+            fontSize = 20.sp,
             fontFamily = FontFamily.Monospace,
             color = MaterialTheme.colorScheme.onPrimary,
             text = text,
@@ -712,7 +754,7 @@ fun SelectorTitle(
     text: String
 ) {
     Text(
-        fontSize = 22.sp,
+        fontSize = 20.sp,
         fontFamily = FontFamily.Monospace,
         color = MaterialTheme.colorScheme.onPrimary,
         text = text,
@@ -723,146 +765,3 @@ fun SelectorTitle(
             .wrapContentHeight(align = Alignment.CenterVertically)
     )
 }
-
-
-//    val navController = rememberNavController()
-//    val navigationState = rememberDrawerState(
-//        initialValue = DrawerValue.Closed
-//    )
-//    val navigationScope = rememberCoroutineScope()
-//
-//    ModalNavigationDrawer(
-//        gesturesEnabled = false,
-//        drawerState = navigationState,
-//        drawerContent = {
-//            ModalDrawerSheet(
-//                modifier = Modifier.then(
-//                    if (navigationState.targetValue == DrawerValue.Open) Modifier.fillMaxSize() else Modifier
-//                ),
-//                drawerContainerColor = MaterialTheme.colorScheme.primary
-//            ) {
-//                DrawerContent(
-//                    onCloseDrawer = {
-//                        navigationScope.launch {
-//                            navigationState.apply {
-//                                if (isOpen) close()
-//                            }
-//                        }
-//                    },
-//                    navController = navController
-//                )
-//            }
-//        }
-//    ) {
-//        NavHost(
-//            navController = navController,
-//            startDestination = "generate",
-//            enterTransition = { EnterTransition.None },
-//            exitTransition = { ExitTransition.None }
-//        ) {
-//            composable(
-//                route = "generate",
-//            ) {
-//                GeneratePasswordContent(navigationScope, navigationState, navController)
-//            }
-//            composable(
-//                route = "info",
-//                enterTransition = {
-//                    slideIntoContainer(
-//                        animationSpec = tween(300, easing = EaseOut),
-//                        towards = SlideDirection.Left
-//                    )
-//                },
-//                exitTransition = {
-//                    slideOutOfContainer(
-//                        animationSpec = tween(300, easing = EaseOut),
-//                        towards = SlideDirection.Right
-//                    )
-//                }
-//            ) {
-//                InfoContent(navController)
-//            }
-//        }
-//    }
-
-//@Composable
-//fun DrawerContent (
-//    onCloseDrawer : () -> Unit,
-//    navController: NavController
-//) {
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(top = 14.dp, bottom = 14.dp, start = 16.dp, end = 16.dp),
-//        verticalAlignment = Alignment.CenterVertically,
-//        horizontalArrangement = Arrangement.SpaceBetween
-//    ) {
-//        Text(
-//            "available functions",
-//            fontSize = Typography.titleLarge.fontSize,
-//            fontWeight = Typography.titleLarge.fontWeight
-//        )
-//
-//        Icon(
-//            imageVector = Icons.Default.Close,
-//            contentDescription = "Close drawer",
-//            modifier = Modifier
-//                .size(iconSize)
-//                .clickable {
-//                    onCloseDrawer()
-//                }
-//        )
-//    }
-//    HorizontalDivider()
-//
-//    @Composable
-//    fun DrawerItem (
-//        imageVector : ImageVector,
-//        function : String,
-//        route : String
-//    ) {
-//        NavigationDrawerItem(
-//            shape = RectangleShape,
-//            modifier = Modifier.height(65.dp),
-//            colors = NavigationDrawerItemDefaults.colors(
-//                unselectedContainerColor = MaterialTheme.colorScheme.secondary,
-//                selectedContainerColor = MaterialTheme.colorScheme.primary
-//            ),
-//            icon = {
-//                Icon(
-//                    imageVector = imageVector,
-//                    contentDescription = function,
-//                    tint = MaterialTheme.colorScheme.onPrimary,
-//                    modifier = Modifier
-//                        .padding(start = 16.dp, end = 8.dp)
-//                        .size(smallIconSize)
-//                )
-//            },
-//            label = {
-//                Text(
-//                    function,
-//                    color = MaterialTheme.colorScheme.onPrimary,
-//                    fontSize = 20.sp
-//                )
-//            },
-//            selected = false,//currentRoute == route,
-//            onClick = {
-//                onCloseDrawer()
-//                navController.navigate(route)
-//            }
-//        )
-//    }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(MaterialTheme.colorScheme.secondary),
-//        verticalArrangement = Arrangement.Top,
-//        horizontalAlignment = Alignment.Start
-//    ) {
-//        Spacer(modifier = Modifier.height(10.dp))
-//        DrawerItem(Icons.Default.Build, "generate password", "generate")
-//        DrawerItem(Icons.Outlined.Info, "read info", "info")
-//    }
-//
-//}
