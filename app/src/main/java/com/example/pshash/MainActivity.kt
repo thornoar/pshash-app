@@ -9,12 +9,18 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,7 +30,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -32,6 +45,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -47,22 +61,37 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -76,6 +105,9 @@ import com.example.pshash.ui.theme.iconSize
 import com.example.pshash.ui.theme.smallIconSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+
+import com.example.pshash.*
+import java.nio.channels.Selector
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -279,11 +311,171 @@ fun DrawerContent (
 }
 
 @Composable
+fun TextBox(
+    text: MutableState<String>,
+    default: String,
+    textPadding: Dp,
+    boxPadding: Dp,
+    valid: Boolean,
+    selected: Boolean
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = boxPadding, end = boxPadding)
+            .border(if (selected) 2.dp else 1.dp, if (valid) Color.Green else Color.Red, RoundedCornerShape(0.dp))
+    ) {
+        Text(
+            text = text.value.ifEmpty { default },
+            fontSize = 18.sp,
+            modifier = Modifier
+                .padding(top = textPadding, bottom = textPadding, start = textPadding)
+                .alpha(if (text.value.isEmpty()) 0.5f else 1f)
+        )
+    }
+}
+
+@Composable
+fun BottomButton(
+    onClick: () -> Unit,
+    text: String
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier
+            .height(50.dp)
+            .width(200.dp)
+    ) {
+        Text(
+            fontSize = 22.sp,
+            fontFamily = FontFamily.Monospace,
+            color = MaterialTheme.colorScheme.onPrimary,
+            text = text,
+        )
+    }
+}
+
+@Composable
+fun SelectorTitle(
+    text: String
+) {
+    Text(
+        fontSize = 22.sp,
+        fontFamily = FontFamily.Monospace,
+        color = MaterialTheme.colorScheme.onPrimary,
+        text = text,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .wrapContentWidth(align = Alignment.CenterHorizontally)
+            .wrapContentHeight(align = Alignment.CenterVertically)
+    )
+}
+
+@Composable
+fun ConfigSelector(
+    text: MutableState<String>,
+    currentPoint: MutableIntState,
+    boxPadding: Dp
+) {
+    SelectorTitle("choose configuration")
+
+    HorizontalDivider()
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(350.dp)
+            .background(MaterialTheme.colorScheme.tertiary),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        itemsIndexed(availableConfigKeywords.asList()) { index, item ->
+            TextButton(
+                onClick = { text.value = item },
+                modifier = Modifier
+                    .background(if (item == text.value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary)
+                    .fillMaxWidth()
+                    .height(40.dp)
+            ) {
+                Text(
+                    text = item,
+                    fontSize = 18.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                )
+            }
+        }
+    }
+
+    HorizontalDivider()
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        BottomButton(
+            onClick = { },
+            text = "previous"
+        )
+        BottomButton(
+            onClick = { currentPoint.intValue = 2 },
+            text = "next"
+        )
+    }
+}
+
+@Composable
+fun PublicSelector(
+    text: MutableState<String>,
+    currentPoint: MutableIntState,
+    boxPadding: Dp
+) {
+    SelectorTitle("choose public key")
+    HorizontalDivider()
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        BottomButton(
+            onClick = { currentPoint.intValue = 1 },
+            text = "previous"
+        )
+        BottomButton(
+            onClick = { if (!text.value.isEmpty()) { currentPoint.intValue = 3 } },
+            text = "next"
+        )
+    }
+}
+
+@Composable
 fun HomeContent(
     navigationScope : CoroutineScope,
     navigationState : DrawerState,
     navController : NavController
 ) {
+    val currentPoint = remember { mutableIntStateOf(1) }
+    val generated = remember { mutableStateOf(false) }
+    val password = remember { mutableStateOf("") }
+
+    val config = remember { mutableStateOf("") }
+    val public = remember { mutableStateOf("") }
+    val choice = remember { mutableStateOf("") }
+    val shuffle = remember { mutableStateOf("") }
+
+    val validConfig = availableConfigKeywords.any { it == config.value }
+    val validPublic = isValidPublicKey(public.value)
+    val validChoice = isValidPrivateKey(choice.value)
+    val validShuffle = isValidPrivateKey(shuffle.value)
+
+    val textPadding = 14.dp
+    val boxPadding = 16.dp
+
     Scaffold(
         topBar = {
             FunctionTopBar(
@@ -305,7 +497,7 @@ fun HomeContent(
         ) {
             Column (
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween,
+                verticalArrangement = Arrangement.Top,
                 modifier = Modifier.padding(innerPadding).fillMaxSize()
             ) {
                 Column (
@@ -313,46 +505,18 @@ fun HomeContent(
                     verticalArrangement = Arrangement.SpaceEvenly,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.5f)
-                        .background(MaterialTheme.colorScheme.tertiary)
+                        .fillMaxHeight(0.4f)
                 ) {
-                    Text("text1")
-                    Text("text2")
+                    TextBox(config, "configuration keyword", textPadding, boxPadding, validConfig, currentPoint.intValue == 1)
+                    TextBox(public, "public key", textPadding, boxPadding, validPublic, currentPoint.intValue == 2)
+                    TextBox(choice, "choice private key", textPadding, boxPadding, validChoice, currentPoint.intValue == 3)
+                    TextBox(shuffle, "shuffle private key", textPadding, boxPadding, validShuffle, currentPoint.intValue == 4)
                 }
 
-                Text(
-                    "text3",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.tertiary)
-                )
+                HorizontalDivider()
 
-
-//                var public by remember { mutableStateOf("") }
-//                var choice by remember { mutableStateOf("") }
-//                var shuffle by remember { mutableStateOf("") }
-//                OutlinedTextField(
-//                    modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp),
-//                    value = public,
-//                    onValueChange = { public = it },
-//                    label = { Text("public key") },
-//                    singleLine = true
-//                )
-//                OutlinedTextField(
-//                    modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp),
-//                    value = choice,
-//                    onValueChange = { choice = it },
-//                    label = { Text("choice key") },
-//                    singleLine = true
-//                )
-//                OutlinedTextField(
-//                    modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp),
-//                    value = shuffle,
-//                    onValueChange = { shuffle = it },
-//                    label = { Text("shuffle key") },
-//                    singleLine = true
-//                )
+                if (currentPoint.intValue == 1) ConfigSelector(config, currentPoint, boxPadding)
+                else if (currentPoint.intValue == 2) PublicSelector(public, currentPoint, boxPadding)
             }
         }
     }

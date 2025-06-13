@@ -201,3 +201,43 @@ val getHash : (
     BigInteger,
     BigInteger
 ) -> List<Char> = combineHashing(chooseAndMerge, shuffleList)
+
+val availableConfigKeywords = arrayOf(
+    "long",
+    "medium",
+    "short",
+    "anlong",
+    "anshort",
+    "pin",
+    "mediumpin",
+    "longpin"
+)
+
+fun isValidPublicKey(
+    key: String
+) : Boolean {
+    if (key.isEmpty()) return false
+    for (c in key) {
+        if (c == ' ') return false
+        if (c.isUpperCase()) return false
+    }
+    return true
+}
+
+fun isValidPrivateKey(
+    key: String
+) : Boolean {
+    if (key.isEmpty()) return false
+    var dashCount = 0
+    var count = 0
+    for (c in key) {
+        count += 1
+        if (c == '-') {
+            if (dashCount > 0 || count == 1 || count == key.length) return false
+            dashCount += 1
+            continue
+        }
+        if (!c.isDigit()) return false
+    }
+    return true
+}
