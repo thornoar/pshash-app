@@ -1,5 +1,4 @@
 package com.example.pshash
-import java.math.BigDecimal
 import java.math.BigInteger
 
 fun tbi (n : Int) : BigInteger {
@@ -15,10 +14,6 @@ fun factorial (n : BigInteger) : BigInteger {
 
 fun relativeFactorial (n : BigInteger, m : BigInteger) : BigInteger {
     return if (m == bigZero) bigOne else n * relativeFactorial(n - bigOne, m - bigOne)
-}
-
-fun cnk (n : BigInteger, k : BigInteger) : BigInteger {
-    return relativeFactorial(n,k) / factorial(k)
 }
 
 fun shift (c : Char): BigInteger {
@@ -161,7 +156,7 @@ fun mergeTwoLists (
 fun mergeListsSpread (
     srcs : List<List<Char>>
 ) : BigInteger {
-    var sum : Int = 0
+    var sum = 0
     var prod : BigInteger = bigOne
     for (src in srcs) {
         sum += src.size

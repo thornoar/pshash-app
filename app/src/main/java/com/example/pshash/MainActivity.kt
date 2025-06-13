@@ -1,6 +1,5 @@
 package com.example.pshash
 
-import android.graphics.Paint.Align
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,9 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -53,7 +50,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -336,8 +332,8 @@ fun GeneratePasswordContent(
                     )
 
                     when (currentPoint.intValue) {
-                        1 -> ConfigSelector(config, currentPoint, modifier)
-                        2 -> PublicSelector(public, currentPoint, modifier)
+                        1 -> ConfigSelector(config, modifier)
+                        2 -> PublicSelector(public, modifier)
                         3 -> PrivateSelector(choice, modifier)
                         4 -> PrivateSelector(shuffle, modifier)
                         else -> PasswordGenerator(
@@ -370,7 +366,6 @@ fun GeneratePasswordContent(
 @Composable
 fun ConfigSelector(
     text: MutableState<String>,
-    currentPoint: MutableIntState,
     modifier: Modifier
 ) {
     LazyColumn(
@@ -407,7 +402,6 @@ fun ConfigSelector(
 @Composable
 fun PublicSelector(
     text: MutableState<String>,
-    currentPoint: MutableIntState,
     modifier: Modifier
 ) {
     Column(

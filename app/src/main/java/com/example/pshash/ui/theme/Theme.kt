@@ -1,6 +1,5 @@
 package com.example.pshash.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -24,8 +23,6 @@ val Pink80 = Color(0xFF744D7E)
 val DarkPurple40 = Color(0xFF312649)
 val DarkPurpleGrey40 = Color(0xFF1F1931)
 val DarkDarkPurpleGrey40 = Color(0xFF1B1728)
-val Purple40 = Color(0xFF453A62)
-//val Pink40 = Color(0xFF8F4E8B)
 
 val LightColorScheme = darkColorScheme(
     primary = Purple80,
