@@ -247,7 +247,8 @@ fun InfoContent (
                         "This is the Android app version of the algorithm. There is also a web version " +
                         "available at thornoar.github.io/pshash/web/app, as well as a CLI version " +
                         "available in the Nix package manager or on the AUR. One may also build it from " +
-                        "source at github.com/thornoar/pshash."
+                        "source at github.com/thornoar/pshash." +
+                        "\n"
                 )
             }
         }
