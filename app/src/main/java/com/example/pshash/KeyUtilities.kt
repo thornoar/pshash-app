@@ -112,3 +112,9 @@ fun getPassword(
     val hash = getHash(realConfig, realChoice, realShuffle)
     return hash.fastJoinToString(separator = "") { c -> c.toString() }
 }
+
+fun separate(
+    str: String
+) : List<String> {
+    return str.toList().map { c -> c.toString() }
+}

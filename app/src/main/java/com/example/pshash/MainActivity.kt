@@ -414,10 +414,10 @@ fun PublicSelector(
                 vertical = 10.dp,
                 horizontal = 9.dp
             )
-        LetterRow("1234567890".toList().map { c -> c.toString() }, text, keyModifier)
-        LetterRow("qwertyuiop".toList().map { c -> c.toString() }, text, keyModifier)
-        LetterRow("asdfghjkl".toList().map { c -> c.toString() }, text, keyModifier)
-        LetterRow("zxcvbnm.-".toList().map { c -> c.toString() }, text, keyModifier)
+        LetterRow(separate("1234567890"), text, keyModifier)
+        LetterRow(separate("qwertyuiop"), text, keyModifier)
+        LetterRow(separate("asdfghjkl"), text, keyModifier)
+        LetterRow(separate("zxcvbnm.-"), text, keyModifier)
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
