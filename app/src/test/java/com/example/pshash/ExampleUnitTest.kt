@@ -14,6 +14,6 @@ fun string (
 class ExampleUnitTest {
     @Test
     fun test() {
-        println(string(getHash(pinCodeConfiguration, tbi(12902 + 45), tbi(45))))
+        println(getPassword("mediumpin", "azaza", "27", "345^9", "234^2"))
     }
 }

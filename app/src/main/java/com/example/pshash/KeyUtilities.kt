@@ -33,12 +33,13 @@ fun isValidPrivateKey(
 }
 
 fun getPublicKey(
-    keyStr: String
+    keyStr: String,
+    patch: Int
 ) : BigInteger {
     var res = bigZero
     for (c in keyStr) {
         res *= tbi(128)
-        res += tbi(c.code)
+        res += tbi((c.code + patch) % 128)
     }
     return res
 }
@@ -103,11 +104,12 @@ fun displayConfiguration(
 fun getPassword(
     config: String,
     public: String,
+    patch: String,
     choice: String,
     shuffle: String
 ) : String {
     val realConfig = getConfiguration(config)
-    val realChoice = getPrivateKey(choice) + getPublicKey(public)
+    val realChoice = getPrivateKey(choice) + getPublicKey(public, patch.toInt())
     val realShuffle = getPrivateKey(shuffle)
     val hash = getHash(realConfig, realChoice, realShuffle)
     return hash.fastJoinToString(separator = "") { c -> c.toString() }

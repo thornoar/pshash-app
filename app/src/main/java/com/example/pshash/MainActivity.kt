@@ -68,6 +68,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.text.isDigitsOnly
 import com.example.pshash.ui.theme.PshashTheme
 import com.example.pshash.ui.theme.barHeight
 import com.example.pshash.ui.theme.iconSize
@@ -104,6 +105,7 @@ fun TopLevel (
     val currentPoint = remember { mutableIntStateOf(1) }
     val config = remember { mutableStateOf("") }
     val public = remember { mutableStateOf("") }
+    val patch = remember { mutableStateOf("") }
     val choice = remember { mutableStateOf("") }
     val shuffle = remember { mutableStateOf("") }
 
@@ -113,7 +115,7 @@ fun TopLevel (
         MenuContent(inMenu, inInfo, currentScreen)
     } else {
         if (currentScreen.intValue == generateScreenId) {
-            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, choice, shuffle)
+            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle)
         }
     }
 }
@@ -258,11 +260,13 @@ fun GeneratePasswordContent(
     currentPoint: MutableIntState,
     config: MutableState<String>,
     public: MutableState<String>,
+    patch: MutableState<String>,
     choice: MutableState<String>,
     shuffle: MutableState<String>,
 ) {
     val validConfig = availableConfigKeywords.any { it == config.value }
     val validPublic = isValidPublicKey(public.value)
+    val validPatch = patch.value.isDigitsOnly()
     val validChoice = isValidPrivateKey(choice.value)
     val validShuffle = isValidPrivateKey(shuffle.value)
     val ready = validConfig && validPublic && validChoice && validShuffle
@@ -297,10 +301,19 @@ fun GeneratePasswordContent(
                         .fillMaxWidth()
                         .fillMaxHeight(0.4f)
                 ) {
-                    TextBox(displayConfiguration(config.value), false, "source configuration", textPadding, boxPadding, validConfig, currentPoint.intValue == 1)
-                    TextBox(public.value, false, "public key", textPadding, boxPadding, validPublic, currentPoint.intValue == 2)
-                    TextBox(choice.value, true, "choice private key", textPadding, boxPadding, validChoice, currentPoint.intValue == 3)
-                    TextBox(shuffle.value, true, "shuffle private key", textPadding, boxPadding, validShuffle, currentPoint.intValue == 4)
+                    val defaultModifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = boxPadding, end = boxPadding)
+                    TextBox(displayConfiguration(config.value), false, "source configuration", validConfig, currentPoint, 1, defaultModifier)
+                    Row(
+                        modifier = defaultModifier,
+                        horizontalArrangement = Arrangement.spacedBy(boxPadding)
+                    ) {
+                        TextBox(public.value, false, "public key", validPublic, currentPoint, 2, Modifier.weight(5f))
+                        TextBox(patch.value, false, "0", validPatch, currentPoint, 3, Modifier.weight(1f))
+                    }
+                    TextBox(choice.value, true, "choice private key", validChoice, currentPoint, 4, defaultModifier)
+                    TextBox(shuffle.value, true, "shuffle private key", validShuffle, currentPoint, 5, defaultModifier)
                 }
 
                 val modifier = Modifier
@@ -318,8 +331,9 @@ fun GeneratePasswordContent(
                         when (currentPoint.intValue) {
                             1 -> "source configuration"
                             2 -> "public key"
-                            3 -> "choice private key"
-                            4 -> "shuffle private key"
+                            3 -> "patch public key"
+                            4 -> "choice private key"
+                            5 -> "shuffle private key"
                             else -> if (ready) "password generated!" else "...em, invalid values"
                         }
                     )
@@ -334,12 +348,14 @@ fun GeneratePasswordContent(
                     when (currentPoint.intValue) {
                         1 -> ConfigSelector(config, modifier)
                         2 -> PublicSelector(public, modifier)
-                        3 -> PrivateSelector(choice, modifier)
-                        4 -> PrivateSelector(shuffle, modifier)
+                        3 -> PatchSelector(patch, modifier)
+                        4 -> PrivateSelector(choice, modifier)
+                        5 -> PrivateSelector(shuffle, modifier)
                         else -> PasswordGenerator(
                             ready = ready,
                             config = config.value,
                             public = public.value,
+                            patch = patch.value.ifEmpty { "0" },
                             choice = choice.value,
                             shuffle = shuffle.value,
                             modifier = modifier
@@ -349,10 +365,11 @@ fun GeneratePasswordContent(
                     HorizontalDivider()
                     BottomRow(
                         currentPoint = currentPoint,
-                        nextVal = min(currentPoint.intValue + 1, 5),
+                        nextVal = min(currentPoint.intValue + 1, 6),
                         prevVal = max(currentPoint.intValue - 1, 1),
                         config = config,
                         public = public,
+                        patch = patch,
                         choice = choice,
                         shuffle = shuffle
                     )
@@ -431,6 +448,65 @@ fun PublicSelector(
 }
 
 @Composable
+fun PatchSelector(
+    text: MutableState<String>,
+    modifier: Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = modifier
+    ) {
+        val keyModifier = Modifier
+            .padding(
+                vertical = 16.dp,
+                horizontal = 16.dp
+            )
+            .width(25.dp)
+        val horizontalArrangement = Arrangement.SpaceEvenly
+        @Composable
+        fun RegularKey(
+            key: String
+        ) {
+            KeyboardKey(key, keyModifier, { text.value = "${text.value}$key" })
+        }
+        Row(
+            horizontalArrangement = horizontalArrangement,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            RegularKey("7")
+            RegularKey("8")
+            RegularKey("9")
+            RegularKey("0")
+        }
+        Row(
+            horizontalArrangement = horizontalArrangement,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            RegularKey("4")
+            RegularKey("5")
+            RegularKey("6")
+            KeyboardKey("⌫", keyModifier, { text.value = text.value.dropLast(1) })
+        }
+        Row(
+            horizontalArrangement = horizontalArrangement,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            RegularKey("1")
+            RegularKey("2")
+            RegularKey("3")
+            KeyboardKey("cl", keyModifier, { text.value = "" })
+        }
+    }
+}
+
+@Composable
 fun PrivateSelector(
     text: MutableState<String>,
     modifier: Modifier
@@ -462,7 +538,7 @@ fun PrivateSelector(
             RegularKey("7")
             RegularKey("8")
             RegularKey("9")
-            RegularKey("^")
+            RegularKey("0")
         }
         Row(
             horizontalArrangement = horizontalArrangement,
@@ -473,7 +549,7 @@ fun PrivateSelector(
             RegularKey("4")
             RegularKey("5")
             RegularKey("6")
-            KeyboardKey("⌫", keyModifier, { text.value = text.value.drop(1) })
+            RegularKey("^")
         }
         Row(
             horizontalArrangement = horizontalArrangement,
@@ -486,17 +562,6 @@ fun PrivateSelector(
             RegularKey("3")
             KeyboardKey("cl", keyModifier, { text.value = "" })
         }
-//            Row(
-//                horizontalArrangement = Arrangement.SpaceEvenly,
-//                verticalAlignment = Alignment.CenterVertically,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(end = 10.dp)
-//            ) {
-//                KeyboardKey("-", keyModifier, { text.value = "${text.value}-" })
-//                KeyboardKey("clear", keyModifier, { text.value = "" })
-//                KeyboardKey("del", keyModifier, { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
-//            }
     }
 }
 
@@ -505,6 +570,7 @@ fun PasswordGenerator(
     ready: Boolean,
     config: String,
     public: String,
+    patch: String,
     choice: String,
     shuffle: String,
     modifier: Modifier
@@ -515,7 +581,7 @@ fun PasswordGenerator(
         modifier = modifier
     ) {
         if (ready) {
-            val password = getPassword(config, public, choice, shuffle)
+            val password = getPassword(config, public, patch, choice, shuffle)
             val clipboardManager = LocalClipboardManager.current
             val copied = remember { mutableStateOf(false) }
             Text(
@@ -651,10 +717,10 @@ fun TextBox(
     text: String,
     conceal: Boolean,
     default: String,
-    textPadding: Dp,
-    boxPadding: Dp,
     valid: Boolean,
-    selected: Boolean
+    currentPoint: MutableIntState,
+    setTo: Int,
+    modifier: Modifier
 ) {
     val realText : String = if (text.isEmpty()) {
         default
@@ -663,12 +729,13 @@ fun TextBox(
     } else {
         text
     }
+    val selected : Boolean = currentPoint.intValue == setTo
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = boxPadding, end = boxPadding)
+            .then(modifier)
             .border(if (selected) 1.dp else 1.dp, if (valid) Color.Green else Color.Red, RoundedCornerShape(cornerRadius))
             .background(if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary)
+            .clickable { currentPoint.intValue = setTo }
     ) {
         Text(
             text = realText,
@@ -707,6 +774,7 @@ fun BottomRow(
     prevVal: Int,
     config: MutableState<String>,
     public: MutableState<String>,
+    patch: MutableState<String>,
     choice: MutableState<String>,
     shuffle: MutableState<String>,
 ) {
@@ -725,10 +793,15 @@ fun BottomRow(
                 currentPoint.intValue = 1
                 config.value = ""
                 public.value = ""
+                patch.value = ""
                 choice.value = ""
                 shuffle.value = ""
             },
             text = "over"
+        )
+        BottomButton(
+            onClick = { currentPoint.intValue = 6 },
+            text = "last"
         )
         BottomButton(
             onClick = { currentPoint.intValue = nextVal },
