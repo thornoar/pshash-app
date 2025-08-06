@@ -338,12 +338,6 @@ fun GeneratePasswordContent(
                         }
                     )
                     HorizontalDivider()
-                    Spacer(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(15.dp)
-                            .background(MaterialTheme.colorScheme.tertiary)
-                    )
 
                     when (currentPoint.intValue) {
                         1 -> ConfigSelector(config, modifier)
@@ -385,6 +379,12 @@ fun ConfigSelector(
     text: MutableState<String>,
     modifier: Modifier
 ) {
+    Spacer(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(15.dp)
+            .background(MaterialTheme.colorScheme.tertiary)
+    )
     LazyColumn(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -575,15 +575,24 @@ fun PasswordGenerator(
     shuffle: String,
     modifier: Modifier
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = modifier
-    ) {
-        if (ready) {
-            val password = getPassword(config, public, patch, choice, shuffle)
-            val clipboardManager = LocalClipboardManager.current
-            val copied = remember { mutableStateOf(false) }
+    if (ready) {
+        val password = getPassword(config, public, patch, choice, shuffle)
+        val clipboardManager = LocalClipboardManager.current
+        val copied = remember { mutableStateOf(false) }
+        val show = remember { mutableStateOf(false) }
+        SelectorTitle(
+            if (show.value) password else "(click here to show)",
+            modifier = Modifier
+                .clickable {
+                    show.value = !show.value
+                }
+        )
+        HorizontalDivider()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = modifier
+        ) {
             Text(
                 text = if (copied.value) "copied!" else "copy to clipboard",
                 fontSize = 20.sp,
@@ -597,7 +606,13 @@ fun PasswordGenerator(
                     .border(1.dp, MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(cornerRadius))
                     .padding(all = 14.dp)
             )
-        } else {
+        }
+    } else {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = modifier
+        ) {
             Icon(
                 imageVector = Icons.Rounded.Warning,
                 contentDescription = "Error",
@@ -607,6 +622,7 @@ fun PasswordGenerator(
             )
         }
     }
+
 }
 
 @Composable
@@ -812,7 +828,8 @@ fun BottomRow(
 
 @Composable
 fun SelectorTitle(
-    text: String
+    text: String,
+    modifier: Modifier = Modifier
 ) {
     Text(
         fontSize = 20.sp,
@@ -820,6 +837,7 @@ fun SelectorTitle(
         color = MaterialTheme.colorScheme.onPrimary,
         text = text,
         modifier = Modifier
+            .then(modifier)
             .fillMaxWidth()
             .height(50.dp)
             .wrapContentWidth(align = Alignment.CenterHorizontally)

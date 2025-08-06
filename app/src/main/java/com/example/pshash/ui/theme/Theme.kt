@@ -25,7 +25,7 @@ val DarkPurpleGrey40 = Color(0xFF1F1931)
 val DarkDarkPurpleGrey40 = Color(0xFF1B1728)
 
 val LightColorScheme = darkColorScheme(
-    primary = Purple80,
+    primary = DarkPurple40,
     secondary = PurpleGrey80,
     tertiary = Pink80,
     background = Color(0xFFF1E0F1),
@@ -61,23 +61,10 @@ val cornerRadius = 5.dp
 
 @Composable
 fun PshashTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = DarkColorScheme,
         typography = Typography,
         content = content
     )
