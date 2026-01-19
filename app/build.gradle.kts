@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.pshash"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.3-alpha"
+        versionCode = 4
+        versionName = "1.4-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

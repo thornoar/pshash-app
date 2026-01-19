@@ -9,33 +9,25 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.Build
-import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -44,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -60,15 +51,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.text.isDigitsOnly
 import com.example.pshash.ui.theme.PshashTheme
 import com.example.pshash.ui.theme.barHeight
 import com.example.pshash.ui.theme.iconSize
@@ -78,8 +65,6 @@ import com.example.pshash.ui.theme.boxPadding
 import com.example.pshash.ui.theme.cornerRadius
 import com.example.pshash.ui.theme.smallIconSize
 import com.example.pshash.ui.theme.textPadding
-import kotlin.math.max
-import kotlin.math.min
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,13 +75,11 @@ class MainActivity : ComponentActivity() {
 }
 
 const val generateScreenId : Int = 0
+const val manageConfigId : Int = 0
 
 @Preview
 @Composable
-fun TopLevel (
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
-) {
+fun TopLevel () {
     val inMenu = remember { mutableStateOf(false) }
     val inInfo = remember { mutableStateOf(false) }
     val currentScreen = remember { mutableIntStateOf(generateScreenId) }
@@ -115,6 +98,8 @@ fun TopLevel (
         MenuContent(inMenu, inInfo, currentScreen)
     } else {
         if (currentScreen.intValue == generateScreenId) {
+            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle)
+        } else if (currentScreen.intValue == manageConfigId) {
             GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle)
         }
     }
@@ -184,7 +169,10 @@ fun MenuContent(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.secondary)
         ) {
-            MenuButton("generate password", Icons.Rounded.Build, inMenu, currentScreen, generateScreenId)
+            HorizontalDivider()
+            MenuButton("generate password", Icons.Rounded.Lock, inMenu, currentScreen, generateScreenId)
+//            HorizontalDivider()
+//            MenuButton("manage configurations", Icons.Rounded.Settings, inMenu, currentScreen, manageConfigId)
         }
     }
 }
@@ -196,7 +184,7 @@ fun InfoContent (
     Scaffold(
         topBar = {
             FunctionTopBar(
-                title = "available functions",
+                title = "info page",
                 leftIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 leftDesc = "Menu",
                 leftCallback = { inInfo.value = false },
@@ -225,404 +213,33 @@ fun InfoContent (
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text =
-                        "`pshash` is a pseudo-hash algorithm implemented in Haskell, JavaScript, C/C++ " +
-                        "and Kotlin. It serves as a password manager by accepting a source configuration " +
+                        "`pshash` is a pseudo-hash password generation algorithm. " +
+                        "It serves as a password manager by accepting a source configuration " +
                         "as well as three keys (one public and two private), returning a pseudo-hash " +
                         "that can be used as a password. The program does not store the passwords " +
                         "anywhere, instead it generates them on the fly every time, which ensures " +
                         "a significant degree of security.\n" +
                         "\n" +
-                        "Various password templates are supported, and the user is free to define " +
-                        "their own. These templates can then be stored in a configuration file, " +
-                        "one template per public key. This way, the user can produce different types of " +
-                        "passwords for different public keys, and does not have to keep all the " +
-                        "templates in their head.\n" +
-                        "\n" +
-                        "The algorithm was designed to withstand brute-forcing as well. For finer " +
-                        "detail, please refer to the corresponding mathematical paper found on " +
-                        "the thornoar/pshash GitHub project under documentation/main.pdf\n" +
-                        "\n" +
                         "This is the Android app version of the algorithm. There is also a web version " +
-                        "available at thornoar.github.io/pshash/web/app, as well as a CLI version " +
+                        "available at thornoar.github.io/pshash-web/app, as well as a CLI version " +
                         "available in the Nix package manager or on the AUR. One may also build it from " +
-                        "source at github.com/thornoar/pshash." +
-                        "\n"
+                        "source at github.com/thornoar/pshash.\n" +
+                        "\n" +
+                        "To generate a password, go to the \"generate password\" page and provide the " +
+                        "specified inputs. The \"source configuration\" defines the character composition " +
+                        "of the password. The \"public key\" is an alphanumeric string that identifies " +
+                        "the destination of the password. The \"choice\" and \"shuffle\" keys are two " +
+                        "large numbers. They are constant across all applications of `pshash` and should " +
+                        "be kept secret. For easier input, the user can type, e.g., \"666^222\" to raise " +
+                        "666 to the power of 222 without having to remember this large number.\n" +
+                        "\n" +
+                        "The algorithm was designed to withstand brute-forcing. For finer " +
+                        "detail, please refer to the corresponding mathematical paper found on " +
+                        "the thornoar/pshash GitHub project under documentation/paper/main.pdf\n"
                 )
             }
         }
     }
-}
-
-@Composable
-fun GeneratePasswordContent(
-    inMenu: MutableState<Boolean>,
-    inInfo: MutableState<Boolean>,
-    currentPoint: MutableIntState,
-    config: MutableState<String>,
-    public: MutableState<String>,
-    patch: MutableState<String>,
-    choice: MutableState<String>,
-    shuffle: MutableState<String>,
-) {
-    val validConfig = availableConfigKeywords.any { it == config.value }
-    val validPublic = isValidPublicKey(public.value)
-    val validPatch = patch.value.isDigitsOnly()
-    val validChoice = isValidPrivateKey(choice.value)
-    val validShuffle = isValidPrivateKey(shuffle.value)
-    val ready = validConfig && validPublic && validChoice && validShuffle
-
-    Scaffold(
-        topBar = {
-            FunctionTopBar(
-                title = "generate password",
-                leftIcon = Icons.Filled.Menu,
-                leftDesc = "Menu",
-                leftCallback = { inMenu.value = true },
-                hasRight = true,
-                rightIcon = Icons.Outlined.Info,
-                rightDesc = "Info",
-                rightCallback = { inInfo.value = true }
-            )
-        }
-    ) { innerPadding ->
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.secondary
-        ) {
-            Column (
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
-                modifier = Modifier.padding(innerPadding).fillMaxSize()
-            ) {
-                Column (
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.4f)
-                ) {
-                    val defaultModifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = boxPadding, end = boxPadding)
-                    TextBox(displayConfiguration(config.value), false, "source configuration", validConfig, currentPoint, 1, defaultModifier)
-                    Row(
-                        modifier = defaultModifier,
-                        horizontalArrangement = Arrangement.spacedBy(boxPadding)
-                    ) {
-                        TextBox(public.value, false, "public key", validPublic, currentPoint, 2, Modifier.weight(5f))
-                        TextBox(patch.value, false, "0", validPatch, currentPoint, 3, Modifier.weight(1f))
-                    }
-                    TextBox(choice.value, true, "choice private key", validChoice, currentPoint, 4, defaultModifier)
-                    TextBox(shuffle.value, true, "shuffle private key", validShuffle, currentPoint, 5, defaultModifier)
-                }
-
-                val modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .background(MaterialTheme.colorScheme.tertiary)
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                ) {
-                    HorizontalDivider()
-                    SelectorTitle(
-                        when (currentPoint.intValue) {
-                            1 -> "source configuration"
-                            2 -> "public key"
-                            3 -> "patch public key"
-                            4 -> "choice private key"
-                            5 -> "shuffle private key"
-                            else -> if (ready) "password generated!" else "...em, invalid values"
-                        }
-                    )
-                    HorizontalDivider()
-
-                    when (currentPoint.intValue) {
-                        1 -> ConfigSelector(config, modifier)
-                        2 -> PublicSelector(public, modifier)
-                        3 -> PatchSelector(patch, modifier)
-                        4 -> PrivateSelector(choice, modifier)
-                        5 -> PrivateSelector(shuffle, modifier)
-                        else -> PasswordGenerator(
-                            ready = ready,
-                            config = config.value,
-                            public = public.value,
-                            patch = patch.value.ifEmpty { "0" },
-                            choice = choice.value,
-                            shuffle = shuffle.value,
-                            modifier = modifier
-                        )
-                    }
-
-                    HorizontalDivider()
-                    BottomRow(
-                        currentPoint = currentPoint,
-                        nextVal = min(currentPoint.intValue + 1, 6),
-                        prevVal = max(currentPoint.intValue - 1, 1),
-                        config = config,
-                        public = public,
-                        patch = patch,
-                        choice = choice,
-                        shuffle = shuffle
-                    )
-                }
-
-            }
-        }
-    }
-}
-
-@Composable
-fun ConfigSelector(
-    text: MutableState<String>,
-    modifier: Modifier
-) {
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(15.dp)
-            .background(MaterialTheme.colorScheme.tertiary)
-    )
-    LazyColumn(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        itemsIndexed(availableConfigKeywords.asList()) { index, item ->
-            TextButton(
-                onClick = { text.value = item },
-                modifier = Modifier
-                    .background(if (item == text.value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary)
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text(
-                    text = displayConfiguration(item),
-                    fontSize = 16.sp,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                )
-            }
-        }
-    }
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(15.dp)
-            .background(MaterialTheme.colorScheme.tertiary)
-    )
-}
-
-@Composable
-fun PublicSelector(
-    text: MutableState<String>,
-    modifier: Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = modifier
-    ) {
-        val keyModifier = Modifier
-            .padding(
-                vertical = 10.dp,
-                horizontal = 9.dp
-            )
-        LetterRow(separate("1234567890"), text, keyModifier)
-        LetterRow(separate("qwertyuiop"), text, keyModifier)
-        LetterRow(separate("asdfghjkl"), text, keyModifier)
-        LetterRow(separate("zxcvbnm.-"), text, keyModifier)
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            KeyboardKey("clear", keyModifier, { text.value = "" })
-            KeyboardKey("⌫", Modifier.padding(vertical = 10.dp, horizontal = 26.dp), { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
-        }
-    }
-}
-
-@Composable
-fun PatchSelector(
-    text: MutableState<String>,
-    modifier: Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = modifier
-    ) {
-        val keyModifier = Modifier
-            .padding(
-                vertical = 16.dp,
-                horizontal = 16.dp
-            )
-            .width(25.dp)
-        val horizontalArrangement = Arrangement.SpaceEvenly
-        @Composable
-        fun RegularKey(
-            key: String
-        ) {
-            KeyboardKey(key, keyModifier, { text.value = "${text.value}$key" })
-        }
-        Row(
-            horizontalArrangement = horizontalArrangement,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            RegularKey("7")
-            RegularKey("8")
-            RegularKey("9")
-            RegularKey("0")
-        }
-        Row(
-            horizontalArrangement = horizontalArrangement,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            RegularKey("4")
-            RegularKey("5")
-            RegularKey("6")
-            KeyboardKey("⌫", keyModifier, { text.value = text.value.dropLast(1) })
-        }
-        Row(
-            horizontalArrangement = horizontalArrangement,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            RegularKey("1")
-            RegularKey("2")
-            RegularKey("3")
-            KeyboardKey("cl", keyModifier, { text.value = "" })
-        }
-    }
-}
-
-@Composable
-fun PrivateSelector(
-    text: MutableState<String>,
-    modifier: Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = modifier
-    ) {
-        val keyModifier = Modifier
-            .padding(
-                vertical = 16.dp,
-                horizontal = 16.dp
-            )
-            .width(25.dp)
-        val horizontalArrangement = Arrangement.SpaceEvenly
-        @Composable
-        fun RegularKey(
-            key: String
-        ) {
-            KeyboardKey(key, keyModifier, { text.value = "${text.value}$key" })
-        }
-        Row(
-            horizontalArrangement = horizontalArrangement,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            RegularKey("7")
-            RegularKey("8")
-            RegularKey("9")
-            RegularKey("0")
-        }
-        Row(
-            horizontalArrangement = horizontalArrangement,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            RegularKey("4")
-            RegularKey("5")
-            RegularKey("6")
-            RegularKey("^")
-        }
-        Row(
-            horizontalArrangement = horizontalArrangement,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            RegularKey("1")
-            RegularKey("2")
-            RegularKey("3")
-            KeyboardKey("cl", keyModifier, { text.value = "" })
-        }
-    }
-}
-
-@Composable
-fun PasswordGenerator(
-    ready: Boolean,
-    config: String,
-    public: String,
-    patch: String,
-    choice: String,
-    shuffle: String,
-    modifier: Modifier
-) {
-    if (ready) {
-        val password = getPassword(config, public, patch, choice, shuffle)
-        val clipboardManager = LocalClipboardManager.current
-        val copied = remember { mutableStateOf(false) }
-        val show = remember { mutableStateOf(false) }
-        SelectorTitle(
-            if (show.value) password else "(click here to show)",
-            modifier = Modifier
-                .clickable {
-                    show.value = !show.value
-                }
-        )
-        HorizontalDivider()
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = modifier
-        ) {
-            Text(
-                text = if (copied.value) "copied!" else "copy to clipboard",
-                fontSize = 20.sp,
-                fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .clickable {
-                        clipboardManager.setText(AnnotatedString(password))
-                        copied.value = true
-                    }
-                    .border(1.dp, MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(cornerRadius))
-                    .padding(all = 14.dp)
-            )
-        }
-    } else {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = modifier
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Warning,
-                contentDescription = "Error",
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .size(200.dp)
-            )
-        }
-    }
-
 }
 
 @Composable
@@ -749,7 +366,7 @@ fun TextBox(
     Box(
         modifier = Modifier
             .then(modifier)
-            .border(if (selected) 1.dp else 1.dp, if (valid) Color.Green else Color.Red, RoundedCornerShape(cornerRadius))
+            .border(1.dp, if (valid) Color.Green else if (selected) Color.Yellow else Color.Red, RoundedCornerShape(cornerRadius))
             .background(if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary)
             .clickable { currentPoint.intValue = setTo }
     ) {
@@ -761,86 +378,4 @@ fun TextBox(
                 .alpha(if (text.isEmpty()) 0.5f else 1f)
         )
     }
-}
-
-@Composable
-fun BottomButton(
-    onClick: () -> Unit,
-    text: String
-) {
-    TextButton(
-        onClick = onClick,
-        modifier = Modifier
-            .height(60.dp)
-//            .width(200.dp)
-    ) {
-        Text(
-            fontSize = 20.sp,
-            fontFamily = FontFamily.Monospace,
-            color = MaterialTheme.colorScheme.onPrimary,
-            text = text,
-        )
-    }
-}
-
-@Composable
-fun BottomRow(
-    currentPoint: MutableIntState,
-    nextVal: Int,
-    prevVal: Int,
-    config: MutableState<String>,
-    public: MutableState<String>,
-    patch: MutableState<String>,
-    choice: MutableState<String>,
-    shuffle: MutableState<String>,
-) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        BottomButton(
-            onClick = { currentPoint.intValue = prevVal },
-            text = "back"
-        )
-        BottomButton(
-            onClick = {
-                currentPoint.intValue = 1
-                config.value = ""
-                public.value = ""
-                patch.value = ""
-                choice.value = ""
-                shuffle.value = ""
-            },
-            text = "over"
-        )
-        BottomButton(
-            onClick = { currentPoint.intValue = 6 },
-            text = "last"
-        )
-        BottomButton(
-            onClick = { currentPoint.intValue = nextVal },
-            text = "next"
-        )
-    }
-}
-
-@Composable
-fun SelectorTitle(
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        fontSize = 20.sp,
-        fontFamily = FontFamily.Monospace,
-        color = MaterialTheme.colorScheme.onPrimary,
-        text = text,
-        modifier = Modifier
-            .then(modifier)
-            .fillMaxWidth()
-            .height(50.dp)
-            .wrapContentWidth(align = Alignment.CenterHorizontally)
-            .wrapContentHeight(align = Alignment.CenterVertically)
-    )
 }
