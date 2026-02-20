@@ -6,29 +6,51 @@ import java.math.BigInteger
 fun isValidPublicKey(
     key: String
 ) : Boolean {
-    if (key.isEmpty()) return false
-    for (c in key) {
-        if (c == ' ') return false
-        if (c.isUpperCase()) return false
-    }
-    return true
+    return !key.isEmpty()
 }
 
+val commonCombinations = listOf(
+    "or","un","el","is","it","us","of","ag","um","yu","in","er","es",
+    "ti","re","te","le","ra","li","ri","ne","se","de","co","ro","la",
+    "di","ca","ta","ve","he","si","me","pe","ni","lo","ma","mi","to",
+    "ce","na","ho","ge","hi","ha","po","pa","no","ci","pi","ke","mo",
+    "ba","be","sa","fi","bo","su","so","bi","tu","vi","gi","ru","ku",
+    "ga","ko","qu","lu","ki","do","fe","fo","bu","da","we","va","fu",
+    "wa","fa","mu","pu","go","wo","gu","du","nu","hu","vo","yi","ze",
+    "ye","ju","jo","xi","ka","xe","ja","zi","je"
+)
+
 fun isValidPrivateKey(
-    key: String
+    key: String,
+    mnemonic: Boolean
 ) : Boolean {
     if (key.isEmpty()) return false
-    var dashCount = 0
-    var count = 0
-    for (c in key) {
-        count += 1
-        if (c == '^') {
-            if (dashCount > 0 || count == 1 || count == key.length) return false
-            dashCount += 1
-            continue
+
+    if (mnemonic) {
+        val len = key.length
+        if (len % 2 == 1) {
+            return false
         }
-        if (!c.isDigit()) return false
+        for (i in 0..<len step 2) {
+            if (!commonCombinations.contains(key.slice(i .. (i+1)))) {
+                return false
+            }
+        }
+    } else {
+        if (key.contains('+')) {
+            return key.split("+").all { str -> isValidPrivateKey(str, false) }
+        }
+        if (key.contains('*')) {
+            return key.split("*").all { str -> isValidPrivateKey(str, false) }
+        }
+        if (key.contains('^')) {
+            return key.split("^").all { str -> isValidPrivateKey(str, false) }
+        }
+        for (c in key) {
+            if (!c.isDigit()) return false
+        }
     }
+
     return true
 }
 

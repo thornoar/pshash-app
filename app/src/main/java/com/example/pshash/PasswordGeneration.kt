@@ -35,6 +35,7 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -59,12 +60,13 @@ fun GeneratePasswordContent(
     patch: MutableState<String>,
     choice: MutableState<String>,
     shuffle: MutableState<String>,
+    inMnemonic: MutableState<Boolean>,
 ) {
     val validConfig = availableConfigKeywords.any { it == config.value }
     val validPublic = isValidPublicKey(public.value)
     val validPatch = patch.value.isDigitsOnly()
-    val validChoice = isValidPrivateKey(choice.value)
-    val validShuffle = isValidPrivateKey(shuffle.value)
+    val validChoice = isValidPrivateKey(choice.value, inMnemonic.value)
+    val validShuffle = isValidPrivateKey(shuffle.value, inMnemonic.value)
     val ready = validConfig && validPublic && validChoice && validShuffle
 
     Scaffold(
@@ -90,7 +92,6 @@ fun GeneratePasswordContent(
                 verticalArrangement = Arrangement.Top,
                 modifier = Modifier.padding(innerPadding).fillMaxSize()
             ) {
-                HorizontalDivider()
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly,
@@ -140,8 +141,8 @@ fun GeneratePasswordContent(
                         1 -> ConfigSelector(config, modifier)
                         2 -> PublicSelector(public, modifier)
                         3 -> PatchSelector(patch, modifier)
-                        4 -> PrivateSelector(choice, modifier)
-                        5 -> PrivateSelector(shuffle, modifier)
+                        4 -> PrivateSelector(choice, inMnemonic, modifier)
+                        5 -> PrivateSelector(shuffle, inMnemonic, modifier)
                         else -> PasswordGenerator(
                             ready = ready,
                             config = config.value,
@@ -306,6 +307,55 @@ fun PatchSelector(
 @Composable
 fun PrivateSelector(
     text: MutableState<String>,
+    inMnemonic: MutableState<Boolean>,
+    modifier: Modifier
+) {
+    if (inMnemonic.value) {
+        PrivateMnemonicSelector(text, inMnemonic, modifier)
+    } else {
+        PrivateArithmeticSelector(text, inMnemonic, modifier)
+    }
+}
+
+@Composable
+fun PrivateMnemonicSelector(
+    text: MutableState<String>,
+    inMnemonic: MutableState<Boolean>,
+    modifier: Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = modifier
+    ) {
+        val keyModifier = Modifier
+            .padding(
+                vertical = 10.dp,
+                horizontal = 9.dp
+            )
+        LetterRow(separate("qwertyuio"), text, keyModifier)
+        LetterRow(separate("asdfghjkp"), text, keyModifier)
+        LetterRow(separate("zxcvbnml"), text, keyModifier)
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            KeyboardKey("clear", keyModifier, { text.value = "" })
+            KeyboardKey("⌫", Modifier.padding(vertical = 10.dp, horizontal = 26.dp), { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
+            KeyboardKey("arith", keyModifier, {
+                text.value = ""
+                inMnemonic.value = false
+            })
+        }
+    }
+}
+
+@Composable
+fun PrivateArithmeticSelector(
+    text: MutableState<String>,
+    inMnemonic: MutableState<Boolean>,
     modifier: Modifier
 ) {
     Column(
@@ -346,7 +396,7 @@ fun PrivateSelector(
             RegularKey("4")
             RegularKey("5")
             RegularKey("6")
-            RegularKey("^")
+            KeyboardKey("⌫", keyModifier, { text.value = text.value.dropLast(1) })
         }
         Row(
             horizontalArrangement = horizontalArrangement,
@@ -358,6 +408,20 @@ fun PrivateSelector(
             RegularKey("2")
             RegularKey("3")
             KeyboardKey("cl", keyModifier, { text.value = "" })
+        }
+        Row(
+            horizontalArrangement = horizontalArrangement,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            RegularKey("+")
+            RegularKey("*")
+            RegularKey("^")
+            KeyboardKey("mn", keyModifier, {
+                text.value = ""
+                inMnemonic.value = true
+            })
         }
     }
 }

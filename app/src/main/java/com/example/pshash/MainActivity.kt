@@ -91,6 +91,7 @@ fun TopLevel () {
     val patch = remember { mutableStateOf("") }
     val choice = remember { mutableStateOf("") }
     val shuffle = remember { mutableStateOf("") }
+    val inMnemonic = remember { mutableStateOf(false) }
 
     if (inInfo.value) {
         InfoContent(inInfo)
@@ -98,9 +99,9 @@ fun TopLevel () {
         MenuContent(inMenu, inInfo, currentScreen)
     } else {
         if (currentScreen.intValue == generateScreenId) {
-            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle)
+            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle, inMnemonic)
         } else if (currentScreen.intValue == manageConfigId) {
-            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle)
+            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle, inMnemonic)
         }
     }
 }
@@ -191,54 +192,55 @@ fun InfoContent (
             )
         }
     ) { innerPadding ->
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.tertiary
+//        Surface(
+//            modifier = Modifier.fillMaxSize(),
+//            color = MaterialTheme.colorScheme.tertiary
+//        ) {
+//        HorizontalDivider()
+        Column (
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(start = 14.dp, end = 14.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column (
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(start = 28.dp, end = 28.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Spacer(modifier = Modifier.height(28.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.logo_white),
-                    contentDescription = "The logo",
-                )
-                Spacer(modifier = Modifier.height(25.dp))
-                HorizontalDivider()
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text =
-                        "`pshash` is a pseudo-hash password generation algorithm. " +
-                        "It serves as a password manager by accepting a source configuration " +
-                        "as well as three keys (one public and two private), returning a pseudo-hash " +
-                        "that can be used as a password. The program does not store the passwords " +
-                        "anywhere, instead it generates them on the fly every time, which ensures " +
-                        "a significant degree of security.\n" +
-                        "\n" +
-                        "This is the Android app version of the algorithm. There is also a web version " +
-                        "available at thornoar.github.io/pshash-web/app, as well as a CLI version " +
-                        "available in the Nix package manager or on the AUR. One may also build it from " +
-                        "source at github.com/thornoar/pshash.\n" +
-                        "\n" +
-                        "To generate a password, go to the \"generate password\" page and provide the " +
-                        "specified inputs. The \"source configuration\" defines the character composition " +
-                        "of the password. The \"public key\" is an alphanumeric string that identifies " +
-                        "the destination of the password. The \"choice\" and \"shuffle\" keys are two " +
-                        "large numbers. They are constant across all applications of `pshash` and should " +
-                        "be kept secret. For easier input, the user can type, e.g., \"666^222\" to raise " +
-                        "666 to the power of 222 without having to remember this large number.\n" +
-                        "\n" +
-                        "The algorithm was designed to withstand brute-forcing. For finer " +
-                        "detail, please refer to the corresponding mathematical paper found on " +
-                        "the thornoar/pshash GitHub project under documentation/paper/main.pdf\n"
-                )
-            }
+            Spacer(modifier = Modifier.height(28.dp))
+            Image(
+                painter = painterResource(id = R.drawable.logo_white),
+                contentDescription = "The logo",
+            )
+            Spacer(modifier = Modifier.height(25.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text =
+                    "`pshash` is a pseudo-hash password generation algorithm. " +
+                    "It serves as a password manager by accepting a source configuration " +
+                    "as well as three keys (one public and two private), returning a pseudo-hash " +
+                    "that can be used as a password. The program does not store the passwords " +
+                    "anywhere, instead it generates them on the fly every time, which ensures " +
+                    "a significant degree of security.\n" +
+                    "\n" +
+                    "This is the Android app version of the algorithm. There is also a web version " +
+                    "available at thornoar.github.io/pshash-web/app, as well as a CLI version " +
+                    "available in the Nix package manager or on the AUR. One may also build it from " +
+                    "source at github.com/thornoar/pshash.\n" +
+                    "\n" +
+                    "To generate a password, go to the \"generate password\" page and provide the " +
+                    "specified inputs. The \"source configuration\" defines the character composition " +
+                    "of the password. The \"public key\" is an alphanumeric string that identifies " +
+                    "the destination of the password. The \"choice\" and \"shuffle\" keys are two " +
+                    "large numbers. They are constant across all applications of `pshash` and should " +
+                    "be kept secret. For easier input, the user can type, e.g., \"666^222\" to raise " +
+                    "666 to the power of 222 without having to remember this large number.\n" +
+                    "\n" +
+                    "The algorithm was designed to withstand brute-forcing. For finer " +
+                    "detail, please refer to the corresponding mathematical paper found on " +
+                    "the thornoar/pshash GitHub project under documentation/paper/main.pdf\n"
+            )
         }
+//        }
     }
 }
 
@@ -246,7 +248,7 @@ fun InfoContent (
 fun LetterRow(
     letters: List<String>,
     text: MutableState<String>,
-    keyModifier: Modifier,
+    modifier: Modifier,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -257,7 +259,7 @@ fun LetterRow(
         for (letter in letters) {
             KeyboardKey(
                 letter,
-                keyModifier,
+                modifier,
                 {
                     text.value = "${text.value}$letter"
                 }
@@ -358,7 +360,7 @@ fun TextBox(
     val realText : String = if (text.isEmpty()) {
         default
     } else if (conceal) {
-        "*".repeat(text.length)
+        "(" + text.length.toString() + " letters)"
     } else {
         text
     }

@@ -38,11 +38,13 @@ val LightColorScheme = darkColorScheme(
 )
 
 val DarkColorScheme = lightColorScheme(
-    primary = DarkPurple40,
-    secondary = DarkPurpleGrey40,
-    tertiary = DarkDarkPurpleGrey40,
-    background = Color(0xFF170E17),
-    surface = DarkPurple40,//Color(0xFF1A0E1A),
+    primary = Color.Black,
+    secondary = Color.Black,
+//    tertiary = Color.Black,
+    tertiary = Color(0xFF0E0E12),
+//    tertiary = Color(0xFF1E1E24),
+    background = Color.Black,
+    surface = Color.Black,//Color(0xFF1A0E1A),
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
