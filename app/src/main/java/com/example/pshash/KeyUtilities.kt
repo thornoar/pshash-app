@@ -31,7 +31,7 @@ fun isValidPrivateKey(
         if (len % 2 == 1) {
             return false
         }
-        for (i in 0..<len step 2) {
+        for (i in 0..<(len-1) step 2) {
             if (!commonCombinations.contains(key.slice(i .. (i+1)))) {
                 return false
             }
@@ -67,14 +67,35 @@ fun getPublicKey(
 }
 
 fun getPrivateKey(
-    keyStr: String
+    keyStr: String,
+    mnemonic: Boolean
 ) : BigInteger {
-    val parts = keyStr.split("^", limit = 2)
-    if (parts.size == 1) return parts[0].toBigInteger()
-    if (parts.size != 2) return bigZero
-    val base = tbi(parts[0].toInt())
-    val exp = parts[1].toInt()
-    return base.pow(exp)
+    if (mnemonic) {
+        var acc = ""
+        for (i in 0..<(keyStr.length-1) step 2) {
+            val ind = commonCombinations.indexOf(keyStr.slice(i..(i+1)))
+            acc += ind.toString().padStart(2, '0')
+        }
+        println(acc)
+        return acc.toBigInteger()
+    } else {
+        if (keyStr.contains('+')) {
+            return (keyStr.split("+").map {
+                str -> getPrivateKey(str, false)
+            }).fold(bigZero, { acc, num -> acc + num })
+        }
+        if (keyStr.contains('*')) {
+            return (keyStr.split("*").map {
+                str -> getPrivateKey(str, false)
+            }).fold(bigOne, { acc, num -> acc * num })
+        }
+        if (keyStr.contains('^')) {
+            val parts = keyStr.split("^", limit = 2)
+            return parts[0].toBigInteger().pow(getPrivateKey(parts[1], false).toInt())
+        }
+
+        return keyStr.toBigInteger()
+    }
 }
 
 val availableConfigKeywords = arrayOf(
@@ -128,11 +149,12 @@ fun getPassword(
     public: String,
     patch: String,
     choice: String,
-    shuffle: String
+    shuffle: String,
+    mnemonic: Boolean
 ) : String {
     val realConfig = getConfiguration(config)
-    val realChoice = getPrivateKey(choice) + getPublicKey(public, patch.toInt())
-    val realShuffle = getPrivateKey(shuffle)
+    val realChoice = getPrivateKey(choice, mnemonic) + getPublicKey(public, patch.toInt())
+    val realShuffle = getPrivateKey(shuffle, mnemonic)
     val hash = getHash(realConfig, realChoice, realShuffle)
     return hash.fastJoinToString(separator = "") { c -> c.toString() }
 }

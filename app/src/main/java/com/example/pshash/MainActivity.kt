@@ -232,12 +232,12 @@ fun InfoContent (
                     "of the password. The \"public key\" is an alphanumeric string that identifies " +
                     "the destination of the password. The \"choice\" and \"shuffle\" keys are two " +
                     "large numbers. They are constant across all applications of `pshash` and should " +
-                    "be kept secret. For easier input, the user can type, e.g., \"666^222\" to raise " +
-                    "666 to the power of 222 without having to remember this large number.\n" +
+                    "be kept secret. For easier input, `pshash` supports arithmetic expressions " +
+                    "and mnemonic incantations as input methods.\n" +
                     "\n" +
                     "The algorithm was designed to withstand brute-forcing. For finer " +
                     "detail, please refer to the corresponding mathematical paper found on " +
-                    "the thornoar/pshash GitHub project under documentation/paper/main.pdf\n"
+                    "the thornoar/pshash GitHub project under paper/main.pdf\n"
             )
         }
 //        }

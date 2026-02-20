@@ -150,6 +150,7 @@ fun GeneratePasswordContent(
                             patch = patch.value.ifEmpty { "0" },
                             choice = choice.value,
                             shuffle = shuffle.value,
+                            mnemonic = inMnemonic.value,
                             modifier = modifier
                         )
                     }
@@ -434,10 +435,11 @@ fun PasswordGenerator(
     patch: String,
     choice: String,
     shuffle: String,
+    mnemonic: Boolean,
     modifier: Modifier
 ) {
     if (ready) {
-        val password = getPassword(config, public, patch, choice, shuffle)
+        val password = getPassword(config, public, patch, choice, shuffle, mnemonic)
         val clipboardManager = LocalClipboardManager.current
         val copied = remember { mutableStateOf(false) }
         val show = remember { mutableStateOf(false) }

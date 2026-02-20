@@ -14,6 +14,13 @@ fun string (
 class ExampleUnitTest {
     @Test
     fun test() {
-        println(getPassword("mediumpin", "azaza", "27", "345^9", "234^2"))
+        println(getPassword(
+            "anlong",
+            "zxcvqwer",
+            "27",
+            "234+4321*234^3+4",
+            "34^2+345543*234*342",
+            false
+        ))
     }
 }
