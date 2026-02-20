@@ -237,7 +237,9 @@ fun InfoContent (
                     "\n" +
                     "The algorithm was designed to withstand brute-forcing. For finer " +
                     "detail, please refer to the corresponding mathematical paper found on " +
-                    "the thornoar/pshash GitHub project under paper/main.pdf\n"
+                    "the thornoar/pshash GitHub project under paper/main.pdf.\n" +
+                    "\n" +
+                    "The current version is 1.5-alpha."
             )
         }
 //        }
