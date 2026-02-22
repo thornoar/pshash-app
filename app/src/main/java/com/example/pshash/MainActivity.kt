@@ -91,7 +91,7 @@ fun TopLevel () {
     val patch = remember { mutableStateOf("") }
     val choice = remember { mutableStateOf("") }
     val shuffle = remember { mutableStateOf("") }
-    val inMnemonic = remember { mutableStateOf(false) }
+    val inMnemonic = remember { mutableStateOf(true) }
 
     if (inInfo.value) {
         InfoContent(inInfo)
