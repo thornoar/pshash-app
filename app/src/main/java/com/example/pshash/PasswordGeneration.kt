@@ -1,5 +1,6 @@
 package com.example.pshash
 
+import android.content.ClipData
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,17 +36,18 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.example.pshash.ui.theme.boxPadding
 import com.example.pshash.ui.theme.cornerRadius
+import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.text.ifEmpty
@@ -189,7 +191,7 @@ fun ConfigSelector(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        itemsIndexed(availableConfigKeywords.asList()) { index, item ->
+        itemsIndexed(availableConfigKeywords.asList()) { _, item ->
             TextButton(
                 onClick = { text.value = item },
                 modifier = Modifier
@@ -225,23 +227,30 @@ fun PublicSelector(
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier
     ) {
-        val keyModifier = Modifier
+        val keyModifierPressed = Modifier
+            .padding(
+                vertical = 14.dp,
+                horizontal = 18.dp
+            )
+        val keyModifierUnpressed = Modifier
             .padding(
                 vertical = 10.dp,
                 horizontal = 9.dp
             )
-        LetterRow(separate("1234567890"), text, keyModifier)
-        LetterRow(separate("qwertyuiop"), text, keyModifier)
-        LetterRow(separate("asdfghjkl"), text, keyModifier)
-        LetterRow(separate("zxcvbnm.-"), text, keyModifier)
+        LetterRow(separate("1234567890"), text, keyModifierPressed, keyModifierUnpressed)
+        LetterRow(separate("qwertyuiop"), text, keyModifierPressed, keyModifierUnpressed)
+        LetterRow(separate("asdfghjkl"), text, keyModifierPressed, keyModifierUnpressed)
+        LetterRow(separate("zxcvbnm.-"), text, keyModifierPressed, keyModifierUnpressed)
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            KeyboardKey("clear", keyModifier, { text.value = "" })
-            KeyboardKey("⌫", Modifier.padding(vertical = 10.dp, horizontal = 26.dp), { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
+            KeyboardKey("clear", keyModifierPressed, keyModifierUnpressed) { text.value = "" }
+            KeyboardKey("⌫", Modifier.padding(vertical = 14.dp, horizontal = 36.dp), Modifier.padding(vertical = 10.dp, horizontal = 26.dp)) {
+                if (!text.value.isEmpty()) text.value = text.value.dropLast(1)
+            }
         }
     }
 }
@@ -256,7 +265,13 @@ fun PatchSelector(
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier
     ) {
-        val keyModifier = Modifier
+        val keyModifierPressed = Modifier
+            .padding(
+                vertical = 20.dp,
+                horizontal = 20.dp
+            )
+            .width(28.dp)
+        val keyModifierUnpressed = Modifier
             .padding(
                 vertical = 16.dp,
                 horizontal = 16.dp
@@ -267,7 +282,9 @@ fun PatchSelector(
         fun RegularKey(
             key: String
         ) {
-            KeyboardKey(key, keyModifier, { text.value = "${text.value}$key" })
+            KeyboardKey(key, keyModifierPressed, keyModifierUnpressed) {
+                text.value = "${text.value}$key"
+            }
         }
         Row(
             horizontalArrangement = horizontalArrangement,
@@ -289,7 +306,9 @@ fun PatchSelector(
             RegularKey("4")
             RegularKey("5")
             RegularKey("6")
-            KeyboardKey("⌫", keyModifier, { text.value = text.value.dropLast(1) })
+            KeyboardKey("⌫", keyModifierPressed, keyModifierUnpressed) {
+                text.value = text.value.dropLast(1)
+            }
         }
         Row(
             horizontalArrangement = horizontalArrangement,
@@ -300,7 +319,7 @@ fun PatchSelector(
             RegularKey("1")
             RegularKey("2")
             RegularKey("3")
-            KeyboardKey("cl", keyModifier, { text.value = "" })
+            KeyboardKey("cl", keyModifierPressed, keyModifierUnpressed) { text.value = "" }
         }
     }
 }
@@ -329,26 +348,33 @@ fun PrivateMnemonicSelector(
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier
     ) {
-        val keyModifier = Modifier
+        val keyModifierPressed = Modifier
+            .padding(
+                vertical = 14.dp,
+                horizontal = 18.dp
+            )
+        val keyModifierUnpressed = Modifier
             .padding(
                 vertical = 10.dp,
                 horizontal = 9.dp
             )
-        LetterRow(separate("qwertyuio"), text, keyModifier)
-        LetterRow(separate("asdfghjkp"), text, keyModifier)
-        LetterRow(separate("zxcvbnml"), text, keyModifier)
+        LetterRow(separate("qwertyuio"), text, keyModifierPressed, keyModifierUnpressed)
+        LetterRow(separate("asdfghjkp"), text, keyModifierPressed, keyModifierUnpressed)
+        LetterRow(separate("zxcvbnml"), text, keyModifierPressed, keyModifierUnpressed)
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            KeyboardKey("clear", keyModifier, { text.value = "" })
-            KeyboardKey("⌫", Modifier.padding(vertical = 10.dp, horizontal = 26.dp), { if (!text.value.isEmpty()) text.value = text.value.dropLast(1) })
-            KeyboardKey("arith", keyModifier, {
+            KeyboardKey("clear", keyModifierPressed, keyModifierUnpressed) { text.value = "" }
+            KeyboardKey("⌫", Modifier.padding(vertical = 14.dp, horizontal = 36.dp), Modifier.padding(vertical = 10.dp, horizontal = 26.dp)) {
+                if (!text.value.isEmpty()) text.value = text.value.dropLast(1)
+            }
+            KeyboardKey("arith", keyModifierPressed, keyModifierUnpressed) {
                 text.value = ""
                 inMnemonic.value = false
-            })
+            }
         }
     }
 }
@@ -364,7 +390,13 @@ fun PrivateArithmeticSelector(
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier
     ) {
-        val keyModifier = Modifier
+        val keyModifierPressed = Modifier
+            .padding(
+                vertical = 20.dp,
+                horizontal = 20.dp
+            )
+            .width(28.dp)
+        val keyModifierUnpressed = Modifier
             .padding(
                 vertical = 16.dp,
                 horizontal = 16.dp
@@ -374,8 +406,9 @@ fun PrivateArithmeticSelector(
         @Composable
         fun RegularKey(
             key: String
-        ) {
-            KeyboardKey(key, keyModifier, { text.value = "${text.value}$key" })
+        ) { KeyboardKey(key, keyModifierPressed, keyModifierUnpressed) {
+            text.value = "${text.value}$key"
+        }
         }
         Row(
             horizontalArrangement = horizontalArrangement,
@@ -397,7 +430,9 @@ fun PrivateArithmeticSelector(
             RegularKey("4")
             RegularKey("5")
             RegularKey("6")
-            KeyboardKey("⌫", keyModifier, { text.value = text.value.dropLast(1) })
+            KeyboardKey("⌫", keyModifierPressed, keyModifierUnpressed) {
+                if (!text.value.isEmpty()) text.value = text.value.dropLast(1)
+            }
         }
         Row(
             horizontalArrangement = horizontalArrangement,
@@ -408,7 +443,9 @@ fun PrivateArithmeticSelector(
             RegularKey("1")
             RegularKey("2")
             RegularKey("3")
-            KeyboardKey("cl", keyModifier, { text.value = "" })
+            KeyboardKey("cl", keyModifierPressed, keyModifierUnpressed) {
+                text.value = ""
+            }
         }
         Row(
             horizontalArrangement = horizontalArrangement,
@@ -419,10 +456,10 @@ fun PrivateArithmeticSelector(
             RegularKey("+")
             RegularKey("*")
             RegularKey("^")
-            KeyboardKey("mn", keyModifier, {
+            KeyboardKey("mn", keyModifierPressed, keyModifierUnpressed) {
                 text.value = ""
                 inMnemonic.value = true
-            })
+            }
         }
     }
 }
@@ -440,9 +477,10 @@ fun PasswordGenerator(
 ) {
     if (ready) {
         val password = getPassword(config, public, patch, choice, shuffle, mnemonic)
-        val clipboardManager = LocalClipboardManager.current
+        val clipboardManager = LocalClipboard.current
         val copied = remember { mutableStateOf(false) }
         val show = remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
         SelectorTitle(
             if (show.value) password else "(click here to show)",
             modifier = Modifier
@@ -463,7 +501,9 @@ fun PasswordGenerator(
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
                     .clickable {
-                        clipboardManager.setText(AnnotatedString(password))
+                        scope.launch {
+                            clipboardManager.setClipEntry(ClipEntry(ClipData.newPlainText(password, password)))
+                        }
                         copied.value = true
                     }
                     .border(1.dp, MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(cornerRadius))
@@ -539,7 +579,6 @@ fun BottomButton(
         onClick = onClick,
         modifier = Modifier
             .height(60.dp)
-//            .width(200.dp)
     ) {
         Text(
             fontSize = 20.sp,

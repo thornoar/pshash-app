@@ -82,12 +82,12 @@ fun getPrivateKey(
         if (keyStr.contains('+')) {
             return (keyStr.split("+").map {
                 str -> getPrivateKey(str, false)
-            }).fold(bigZero, { acc, num -> acc + num })
+            }).fold(bigZero) { acc, num -> acc + num }
         }
         if (keyStr.contains('*')) {
             return (keyStr.split("*").map {
                 str -> getPrivateKey(str, false)
-            }).fold(bigOne, { acc, num -> acc * num })
+            }).fold(bigOne) { acc, num -> acc * num }
         }
         if (keyStr.contains('^')) {
             val parts = keyStr.split("^", limit = 2)

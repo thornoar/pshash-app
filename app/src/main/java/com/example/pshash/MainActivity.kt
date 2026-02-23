@@ -27,14 +27,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -60,7 +58,6 @@ import com.example.pshash.ui.theme.PshashTheme
 import com.example.pshash.ui.theme.barHeight
 import com.example.pshash.ui.theme.iconSize
 
-import com.example.pshash.ui.theme.PurpleGrey80
 import com.example.pshash.ui.theme.boxPadding
 import com.example.pshash.ui.theme.cornerRadius
 import com.example.pshash.ui.theme.smallIconSize
@@ -192,11 +189,6 @@ fun InfoContent (
             )
         }
     ) { innerPadding ->
-//        Surface(
-//            modifier = Modifier.fillMaxSize(),
-//            color = MaterialTheme.colorScheme.tertiary
-//        ) {
-//        HorizontalDivider()
         Column (
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
@@ -239,10 +231,9 @@ fun InfoContent (
                     "detail, please refer to the corresponding mathematical paper found on " +
                     "the thornoar/pshash GitHub project under paper/main.pdf.\n" +
                     "\n" +
-                    "The current version is 1.5-alpha."
+                    "The current version is 1.6-alpha."
             )
         }
-//        }
     }
 }
 
@@ -250,7 +241,8 @@ fun InfoContent (
 fun LetterRow(
     letters: List<String>,
     text: MutableState<String>,
-    modifier: Modifier,
+    modifierPressed: Modifier,
+    modifierUnpressed: Modifier,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -261,11 +253,11 @@ fun LetterRow(
         for (letter in letters) {
             KeyboardKey(
                 letter,
-                modifier,
-                {
-                    text.value = "${text.value}$letter"
-                }
-            )
+                modifierPressed,
+                modifierUnpressed
+            ) {
+                text.value = "${text.value}$letter"
+            }
         }
     }
 }
@@ -273,7 +265,8 @@ fun LetterRow(
 @Composable
 fun KeyboardKey(
     key: String,
-    modifier: Modifier,
+    modifierPressed: Modifier,
+    modifierUnpressed: Modifier,
     onPress: () -> Unit
 ) {
     var isKeyPressed by remember { mutableStateOf(false) }
@@ -281,7 +274,7 @@ fun KeyboardKey(
         text = key,
         fontSize = 19.sp,
         fontFamily = FontFamily.Monospace,
-        color = if (isKeyPressed) PurpleGrey80 else MaterialTheme.colorScheme.onPrimary,
+        color = MaterialTheme.colorScheme.onPrimary,
         modifier = Modifier
             .pointerInput(Unit) {
                 detectTapGestures(onPress = {
@@ -295,10 +288,12 @@ fun KeyboardKey(
                     }
                 })
             }
-            .border(1.dp, if (isKeyPressed) PurpleGrey80 else MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(cornerRadius))
-            .then(modifier)
+            .border(1.dp, MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(cornerRadius))
+            .then(if (isKeyPressed) modifierPressed else modifierUnpressed)
     )
 }
+
+//val defaultKeyModifierPressed =
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

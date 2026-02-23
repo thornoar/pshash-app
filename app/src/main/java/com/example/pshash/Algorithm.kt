@@ -123,7 +123,7 @@ val chooseOrderedSpread : (
 val chooseOrderedSpreadMapped : (
     List<Pair<List<Char>, Int>>
 ) -> BigInteger = { srcs ->
-    srcs.map { src -> chooseOrderedSpread(src) }.fold(bigOne, { acc, cur -> acc * cur})
+    srcs.map { src -> chooseOrderedSpread(src) }.fold(bigOne) { acc, cur -> acc * cur }
 }
 
 val mergeTwoListsSpread : (
