@@ -134,7 +134,7 @@ fun GeneratePasswordContent(
                             3 -> "patch public key"
                             4 -> "choice private key"
                             5 -> "shuffle private key"
-                            else -> if (ready) "password generated!" else "...em, invalid values"
+                            else -> if (ready) "password generated!" else "...em, invalid inputs"
                         }
                     )
                     HorizontalDivider()
@@ -550,7 +550,7 @@ fun BottomRow(
         )
         BottomButton(
             onClick = {
-                currentPoint.intValue = 1
+                currentPoint.intValue = 2
                 config.value = ""
                 public.value = ""
                 patch.value = ""

@@ -83,7 +83,7 @@ fun TopLevel () {
     val currentScreen = remember { mutableIntStateOf(generateScreenId) }
 
     // GeneratePassword states
-    val currentPoint = remember { mutableIntStateOf(1) }
+    val currentPoint = remember { mutableIntStateOf(2) }
     val config = remember { mutableStateOf("") }
     val public = remember { mutableStateOf("") }
     val patch = remember { mutableStateOf("") }

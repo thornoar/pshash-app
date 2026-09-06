@@ -8,15 +8,34 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Optional
 
-class ConfigEntry(pubkey: String, config: List<Pair<List<Char>, Int>>, patch: Int)
+class Config(config: Optional<List<Pair<List<Char>, Int>>>, patch: Int)
 
-fun parseConfig(src: String): List<ConfigEntry> {
-    val res = mutableListOf<ConfigEntry>()
+fun parseConfig(src: String): MutableMap<String, Config> {
+    val res = mutableMapOf<String, Config>()
     for (str in src.lines()) {
-        if (str[0] == '#') continue
+        if (str[0] == '#' || str[0] == ':') continue
         var start: Int = 0
         var offset: Int = 0
         val len = str.length
+
+        var pubkeys: List<String> = listOf()
+        var config: Optional<List<Pair<List<Char>, Int>>> = Optional.empty()
+        var patch: Int = 0
+
+        while (offset < len && str[offset] != ':') {
+            offset += 1
+        }
+        if (offset == len) continue
+        val pubkeysStr = str.substring(start, offset)
+
+        start = offset + 1
+        offset = 0
+
+        while (start < len) {
+            
+        }
+
+        pubkeys = pubkeysStr.split(",").map { it.trim() }
     }
 
     return res
