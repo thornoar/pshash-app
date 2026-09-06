@@ -115,6 +115,7 @@ fun getConfiguration(
 ) : List<Pair<List<Char>, Int>> {
     return when (keyword) {
         "default" -> defaultConfiguration
+        "all" -> allConfiguration
         "long" -> defaultConfiguration
         "medium" -> mediumConfiguration
         "short" -> shortConfiguration
@@ -132,6 +133,7 @@ fun displayConfiguration(
 ) : String {
     return when (keyword) {
         "default" -> "default"
+        "all" -> "all characters"
         "long" -> "8 U., 8 l., 5 sp., 4 dig."
         "medium" -> "5 U., 5 l., 5 sp., 5 dig."
         "short" -> "4 U., 4 l., 4 sp., 4 dig."

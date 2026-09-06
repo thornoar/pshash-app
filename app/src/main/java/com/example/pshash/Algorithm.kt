@@ -77,6 +77,8 @@ val sourceUpper : List<Char> = "RQLIANBKJYVWPTEMCZSFDOGUHX".toList()
 val sourceSpecial : List<Char> = "=!*@?$%#&-+^".toList()
 val sourceNumbers : List<Char> = "1952074386".toList()
 
+val allConfiguration : List<Pair<List<Char>, Int>> =
+    listOf(Pair(sourceLower, 26), Pair(sourceUpper, 26), Pair(sourceSpecial, 12), Pair(sourceNumbers, 10))
 val defaultConfiguration : List<Pair<List<Char>, Int>> =
     listOf(Pair(sourceLower, 8), Pair(sourceUpper, 8), Pair(sourceSpecial, 5), Pair(sourceNumbers, 4))
 val mediumConfiguration : List<Pair<List<Char>, Int>> =

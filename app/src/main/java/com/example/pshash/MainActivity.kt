@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -72,7 +73,7 @@ class MainActivity : ComponentActivity() {
 }
 
 const val generateScreenId : Int = 0
-const val manageConfigId : Int = 0
+const val manageConfigId : Int = 1
 
 @Preview
 @Composable
@@ -98,7 +99,7 @@ fun TopLevel () {
         if (currentScreen.intValue == generateScreenId) {
             GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle, inMnemonic)
         } else if (currentScreen.intValue == manageConfigId) {
-            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle, inMnemonic)
+            GeneralConfigContent(inMenu, inInfo)
         }
     }
 }
@@ -169,8 +170,7 @@ fun MenuContent(
         ) {
             HorizontalDivider()
             MenuButton("generate password", Icons.Rounded.Lock, inMenu, currentScreen, generateScreenId)
-//            HorizontalDivider()
-//            MenuButton("manage configurations", Icons.Rounded.Settings, inMenu, currentScreen, manageConfigId)
+            MenuButton("manage configurations", Icons.Rounded.Settings, inMenu, currentScreen, manageConfigId)
         }
     }
 }

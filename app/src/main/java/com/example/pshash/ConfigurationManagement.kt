@@ -23,7 +23,7 @@ fun GeneralConfigContent(
     Scaffold(
         topBar = {
             FunctionTopBar(
-                title = "generate password",
+                title = "configurations",
                 leftIcon = Icons.Filled.Menu,
                 leftDesc = "Menu",
                 leftCallback = { inMenu.value = true },
