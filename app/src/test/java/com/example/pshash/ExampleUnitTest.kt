@@ -14,13 +14,14 @@ fun string (
 class ExampleUnitTest {
     @Test
     fun test() {
-        println(getPassword(
-            "anlong",
-            "zxcvqwer",
-            "27",
-            "234+4321*234^3+4",
-            "34^2+345543*234*342",
-            false
-        ))
+//        println(getPassword(
+//            "anlong",
+//            "zxcvqwer",
+//            "27",
+//            "234+4321*234^3+4",
+//            "34^2+345543*234*342",
+//            false
+//        ))
+        println("".lines())
     }
 }

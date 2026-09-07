@@ -1,5 +1,6 @@
 package com.example.pshash
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -41,15 +42,19 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -82,6 +87,11 @@ fun TopLevel () {
     val inInfo = remember { mutableStateOf(false) }
     val currentScreen = remember { mutableIntStateOf(generateScreenId) }
 
+    // Configuration state
+    val context = LocalContext.current
+//    val configEntries = remember { mutableStateOf(parseConfig(readConfigFile(context))) }
+    val configEntries: SnapshotStateList<ConfigEntry> = remember { parseConfig(readConfigFile(context)).toMutableStateList() }
+
     // GeneratePassword states
     val currentPoint = remember { mutableIntStateOf(2) }
     val config = remember { mutableStateOf("") }
@@ -99,7 +109,7 @@ fun TopLevel () {
         if (currentScreen.intValue == generateScreenId) {
             GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle, inMnemonic)
         } else if (currentScreen.intValue == manageConfigId) {
-            GeneralConfigContent(inMenu, inInfo)
+            GeneralConfigContent(inMenu, inInfo, configEntries)
         }
     }
 }

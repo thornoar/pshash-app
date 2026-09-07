@@ -544,11 +544,11 @@ fun BottomRow(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        BottomButton(
+        PlainTextButton(
             onClick = { currentPoint.intValue = prevVal },
             text = "back"
         )
-        BottomButton(
+        PlainTextButton(
             onClick = {
                 currentPoint.intValue = 2
                 config.value = ""
@@ -559,32 +559,13 @@ fun BottomRow(
             },
             text = "over"
         )
-        BottomButton(
+        PlainTextButton(
             onClick = { currentPoint.intValue = 6 },
             text = "last"
         )
-        BottomButton(
+        PlainTextButton(
             onClick = { currentPoint.intValue = nextVal },
             text = "next"
-        )
-    }
-}
-
-@Composable
-fun BottomButton(
-    onClick: () -> Unit,
-    text: String
-) {
-    TextButton(
-        onClick = onClick,
-        modifier = Modifier
-            .height(60.dp)
-    ) {
-        Text(
-            fontSize = 20.sp,
-            fontFamily = FontFamily.Monospace,
-            color = MaterialTheme.colorScheme.onPrimary,
-            text = text,
         )
     }
 }

@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.compose.material3.android)
     implementation(libs.compose.material.icons)
+    implementation("io.github.mahdiasd:ComposeFilePicker:1.0.6")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
