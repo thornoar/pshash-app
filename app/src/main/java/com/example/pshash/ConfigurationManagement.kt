@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import github.mahdiasd.composefilepicker.screens.PickerDialog
 import github.mahdiasd.composefilepicker.utils.PickerType
 import java.util.Optional
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun GeneralConfigContent(
@@ -36,7 +37,7 @@ fun GeneralConfigContent(
     configEntries: SnapshotStateList<ConfigEntry>
 ) {
     val inPicker = remember { mutableStateOf(false) }
-//    val pickerTypes = listOf(PickerType.Storage).toImmutableList()
+    val pickerTypes = listOf(PickerType.Storage).toImmutableList()
 
     Scaffold(
         topBar = {
@@ -78,16 +79,18 @@ fun GeneralConfigContent(
                     )
                 }
 
+                fun onFilesSelected
+
                 if (inPicker.value) {
-//                    PickerDialog(
-//                        types = pickerTypes,
-//                        pickerConfig = PickerConfig(maxSelection = 5),
-//                        onDismiss = { showDialog = false },
-//                        selected = { files ->
-//                            onFilesSelected(files)
-//                            showDialog = false
-//                        }
-//                    )
+                    PickerDialog(
+                        types = pickerTypes,
+                        pickerConfig = PickerConfig(maxSelection = 5),
+                        onDismiss = { inPicker = false },
+                        selected = { files ->
+                            onFilesSelected(files)
+                            showDialog = false
+                        }
+                    )
                 } else {
                     LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally,
