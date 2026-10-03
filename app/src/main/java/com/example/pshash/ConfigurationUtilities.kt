@@ -11,23 +11,24 @@ import java.util.Optional
 
 class ConfigEntry(val pubkey: String, val config: Optional<List<Pair<List<Char>, Int>>>, val patch: Int)
 
-fun parseConfig(src: String): List<ConfigEntry> {
+fun parseConfig(src: String): Optional<List<ConfigEntry>> {
     val res = mutableListOf<ConfigEntry>()
     for (str in src.lines()) {
         if (str.isEmpty()) continue
-        if (str[0] == '#' || str[0] == ':') continue
+        if (str[0] == '#') continue
+        if (str[0] == ':') return Optional.empty()
         var start: Int = 0
         var offset: Int = 0
         val len = str.length
-
-        var pubkeys: List<String> = listOf()
         var config: Optional<List<Pair<List<Char>, Int>>> = Optional.empty()
         var patch: Int = 0
 
         while (offset < len && str[offset] != ':') {
             offset += 1
         }
-        if (offset == len) continue
+        if (offset == len) return Optional.empty()
+
+        val pubkeys: List<String> = str.substring(start, offset).split(",").map { it.trim() }
 
         start = offset + 1
         offset = 0
@@ -47,14 +48,15 @@ fun parseConfig(src: String): List<ConfigEntry> {
                     findArgument()
                     if (offset > 0) {
                         try {
-                            patch = str.substring(start, start+offset).toInt()
-                        } catch (_: NumberFormatException) {}
+                            patch = str.substring(start, start + offset).toInt()
+                        } catch (_: NumberFormatException) {
+                        }
                     }
                 }
                 if (str[start] == 'k') {
                     findArgument()
                     if (offset > 0) {
-                        val argconf = getConfiguration(str.substring(start, start+offset))
+                        val argconf = getConfiguration(str.substring(start, start + offset))
                         if (argconf.isNotEmpty()) {
                             config = Optional.of(argconf)
                         }
@@ -63,14 +65,23 @@ fun parseConfig(src: String): List<ConfigEntry> {
                 if (str[start] == 'n') {
                     findArgument()
                     if (offset > 0) {
-                        if (str[start] == '(' && str[start+offset-1] == ')') {
+                        if (str[start] == '(' && str[start + offset - 1] == ')') {
                             start += 1
                             offset -= 1
-                            val stramts = str.substring(start, start+offset).split(",")
+                            val stramts = str.substring(start, start + offset).split(",")
                             if (stramts.size == 4) {
                                 try {
-                                    config = Optional.of(listOf(Pair(sourceLower, stramts[0].toInt()), Pair(sourceUpper, stramts[1].toInt()), Pair(sourceSpecial, stramts[2].toInt()), Pair(sourceNumbers, stramts[3].toInt())))
-                                } catch (e: NumberFormatException) {}
+                                    config = Optional.of(
+                                        listOf(
+                                            Pair(sourceLower, stramts[0].toInt()),
+                                            Pair(sourceUpper, stramts[1].toInt()),
+                                            Pair(sourceSpecial, stramts[2].toInt()),
+                                            Pair(sourceNumbers, stramts[3].toInt())
+                                        )
+                                    )
+                                } catch (_: NumberFormatException) {
+                                    return Optional.empty()
+                                }
                             }
                         }
                     }
@@ -78,14 +89,18 @@ fun parseConfig(src: String): List<ConfigEntry> {
                 if (str[start] == 'c') {
                     // Unsupported yet
                 }
-            }
+
+                start += offset
+                offset = 0
+            } else if (!str[start].isWhitespace()) return Optional.empty()
+
+            start += 1
         }
 
-        pubkeys = str.substring(start, offset).split(",").map { it.trim() }
         res.addAll(pubkeys.map { ConfigEntry(it, config, patch) })
     }
 
-    return res
+    return Optional.of(res)
 }
 
 fun readConfigFile(context: Context): String {

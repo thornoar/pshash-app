@@ -68,6 +68,8 @@ import com.example.pshash.ui.theme.boxPadding
 import com.example.pshash.ui.theme.cornerRadius
 import com.example.pshash.ui.theme.smallIconSize
 import com.example.pshash.ui.theme.textPadding
+import java.util.Optional
+import kotlin.jvm.optionals.getOrElse
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,12 +87,15 @@ const val manageConfigId : Int = 1
 fun TopLevel () {
     val inMenu = remember { mutableStateOf(false) }
     val inInfo = remember { mutableStateOf(false) }
-    val currentScreen = remember { mutableIntStateOf(generateScreenId) }
+    val currentScreen = remember { mutableIntStateOf(manageConfigId) }
 
     // Configuration state
     val context = LocalContext.current
-//    val configEntries = remember { mutableStateOf(parseConfig(readConfigFile(context))) }
-    val configEntries: SnapshotStateList<ConfigEntry> = remember { parseConfig(readConfigFile(context)).toMutableStateList() }
+    val configEntries: SnapshotStateList<ConfigEntry> = remember { parseConfig(readConfigFile(context)).getOrElse { listOf() }
+        .toMutableStateList()
+    }
+//    val presetConfig: SnapshotStateList<Pair<List<Char>, Int>> = remember { listOf<Pair<List<Char>, Int>>().toMutableStateList() }
+    val presetConfig: MutableState<Optional<List<Pair<List<Char>, Int>>>> = remember { mutableStateOf(Optional.empty()) }
 
     // GeneratePassword states
     val currentPoint = remember { mutableIntStateOf(2) }
@@ -107,9 +112,9 @@ fun TopLevel () {
         MenuContent(inMenu, inInfo, currentScreen)
     } else {
         if (currentScreen.intValue == generateScreenId) {
-            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle, inMnemonic)
+            GeneratePasswordContent(inMenu, inInfo, currentPoint, config, public, patch, choice, shuffle, inMnemonic, presetConfig)
         } else if (currentScreen.intValue == manageConfigId) {
-            GeneralConfigContent(inMenu, inInfo, configEntries)
+            GeneralConfigContent(inMenu, inInfo, currentScreen, currentPoint, public, patch, config, configEntries, presetConfig)
         }
     }
 }
@@ -352,39 +357,4 @@ fun FunctionTopBar(
             }
         } else { {} }
     )
-}
-
-@Composable
-fun TextBox(
-    text: String,
-    conceal: Boolean,
-    default: String,
-    valid: Boolean,
-    currentPoint: MutableIntState,
-    setTo: Int,
-    modifier: Modifier
-) {
-    val realText : String = if (text.isEmpty()) {
-        default
-    } else if (conceal) {
-        "(" + text.length.toString() + " letters)"
-    } else {
-        text
-    }
-    val selected : Boolean = currentPoint.intValue == setTo
-    Box(
-        modifier = Modifier
-            .then(modifier)
-            .border(1.dp, if (valid) Color.Green else if (selected) Color.Yellow else Color.Red, RoundedCornerShape(cornerRadius))
-            .background(if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary)
-            .clickable { currentPoint.intValue = setTo }
-    ) {
-        Text(
-            text = realText,
-            fontSize = 16.sp,
-            modifier = Modifier
-                .padding(top = textPadding, bottom = textPadding, start = textPadding)
-                .alpha(if (text.isEmpty()) 0.5f else 1f)
-        )
-    }
 }

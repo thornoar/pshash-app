@@ -2,6 +2,7 @@ package com.example.pshash
 
 import androidx.compose.ui.util.fastJoinToString
 import java.math.BigInteger
+import java.util.Optional
 
 fun isValidPublicKey(
     key: String
@@ -132,19 +133,20 @@ fun getConfiguration(
 fun displayConfiguration(
     keyword: String
 ) : String {
-    return when (keyword) {
-        "default" -> "default"
-        "max" -> "all characters"
-        "long" -> "8 U., 8 l., 5 sp., 4 dig."
-        "medium" -> "5 U., 5 l., 5 sp., 5 dig."
-        "short" -> "4 U., 4 l., 4 sp., 4 dig."
-        "anlong" -> "7 U., 7 l., 7 dig."
-        "anshort" -> "4 U., 4 l., 4 dig."
-        "pin" -> "4-digit pin code"
-        "mediumpin" -> "6-digit pin code"
-        "longpin" -> "8-digit pin code"
-        else -> keyword
-    }
+    return keyword
+//    return when (keyword) {
+//        "default" -> "default"
+//        "max" -> "all characters"
+//        "long" -> "8 U., 8 l., 5 sp., 4 dig."
+//        "medium" -> "5 U., 5 l., 5 sp., 5 dig."
+//        "short" -> "4 U., 4 l., 4 sp., 4 dig."
+//        "anlong" -> "7 U., 7 l., 7 dig."
+//        "anshort" -> "4 U., 4 l., 4 dig."
+//        "pin" -> "4-digit pin code"
+//        "mediumpin" -> "6-digit pin code"
+//        "longpin" -> "8-digit pin code"
+//        else -> keyword
+//    }
 }
 
 fun getPassword(
@@ -153,9 +155,10 @@ fun getPassword(
     patch: String,
     choice: String,
     shuffle: String,
+    presetConfig: Optional<List<Pair<List<Char>, Int>>>,
     mnemonic: Boolean
 ) : String {
-    val realConfig = getConfiguration(config)
+    val realConfig = presetConfig.orElse(getConfiguration(config))
     val realChoice = getPrivateKey(choice, mnemonic) + getPublicKey(public, patch.toInt())
     val realShuffle = getPrivateKey(shuffle, mnemonic)
     val hash = getHash(realConfig, realChoice, realShuffle)

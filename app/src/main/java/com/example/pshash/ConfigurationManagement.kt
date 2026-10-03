@@ -1,5 +1,8 @@
 package com.example.pshash
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,31 +16,59 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import github.mahdiasd.composefilepicker.screens.PickerDialog
-import github.mahdiasd.composefilepicker.utils.PickerType
+import androidx.compose.ui.unit.sp
+import com.example.pshash.ui.theme.boxPadding
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.util.Optional
-import kotlinx.collections.immutable.ImmutableList
+
+private fun readTextFromUri(context: android.content.Context, uri: Uri): String {
+    return context.contentResolver.openInputStream(uri)?.use { inputStream ->
+        BufferedReader(InputStreamReader(inputStream)).use { reader ->
+            reader.readText()
+        }
+    } ?: "Unable to read file"
+}
 
 @Composable
 fun GeneralConfigContent(
     inMenu: MutableState<Boolean>,
     inInfo: MutableState<Boolean>,
-    configEntries: SnapshotStateList<ConfigEntry>
+    currentScreen: MutableIntState,
+    currentPoint: MutableIntState,
+    public: MutableState<String>,
+    patch: MutableState<String>,
+    config: MutableState<String>,
+    configEntries: SnapshotStateList<ConfigEntry>,
+    presetConfig: MutableState<Optional<List<Pair<List<Char>, Int>>>>,
 ) {
-    val inPicker = remember { mutableStateOf(false) }
-    val pickerTypes = listOf(PickerType.Storage).toImmutableList()
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null) {
+            val text = readTextFromUri(context, uri)
+
+            val parsedEntries = parseConfig(text)
+            if (parsedEntries.isEmpty) {
+                configEntries.add(ConfigEntry("asd", Optional.empty(), 0))
+            } else {
+                configEntries.clear()
+                configEntries.addAll(parsedEntries.get())
+                writeConfigFile(context, text)
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -63,42 +94,36 @@ fun GeneralConfigContent(
                 modifier = Modifier.padding(innerPadding).fillMaxSize()
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    horizontalArrangement = Arrangement.spacedBy(boxPadding),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.tertiary)
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .padding(start = boxPadding, end = boxPadding, bottom = boxPadding)
                         .fillMaxWidth()
                 ) {
-                    PlainTextButton(
-                        onClick = { inPicker.value = true },
-                        text = "pick"
+                    BoxedTextButton(
+                        onClick = {
+                            launcher.launch("*/*")
+                        },
+                        text = "pick file",
+                        Modifier.weight(1f)
                     )
-                    PlainTextButton(
-                        onClick = { configEntries.add(ConfigEntry("asd", Optional.empty(), 55)) },
-                        text = "add"
-                    )
+
+//                    BoxedTextButton(
+//                        onClick = {},
+//                        text = "add",
+//                        Modifier.weight(1f)
+//                    )
                 }
 
-                fun onFilesSelected
+                HorizontalDivider()
 
-                if (inPicker.value) {
-                    PickerDialog(
-                        types = pickerTypes,
-                        pickerConfig = PickerConfig(maxSelection = 5),
-                        onDismiss = { inPicker = false },
-                        selected = { files ->
-                            onFilesSelected(files)
-                            showDialog = false
-                        }
-                    )
-                } else {
-                    LazyColumn(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        itemsIndexed(configEntries) { _, item ->
-                            EntryContent(item)
-                        }
+                LazyColumn(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    itemsIndexed(configEntries) { ind, item ->
+                        EntryContent(ind, currentScreen, currentPoint, public, patch, config,item, presetConfig)
                     }
                 }
             }
@@ -108,22 +133,31 @@ fun GeneralConfigContent(
 
 @Composable
 fun EntryContent(
-    entry: ConfigEntry
+    ind: Int,
+    currentScreen: MutableIntState,
+    currentPoint: MutableIntState,
+    public: MutableState<String>,
+    patch: MutableState<String>,
+    config: MutableState<String>,
+    configEntry: ConfigEntry,
+    presetConfig: MutableState<Optional<List<Pair<List<Char>, Int>>>>,
 ) {
-    Column(
-        verticalArrangement = Arrangement.SpaceAround,
-        horizontalAlignment = Alignment.Start,
+    PlainTextButton(
+        onClick = {
+            public.value = configEntry.pubkey
+            patch.value = configEntry.patch.toString()
+            if (configEntry.config.isPresent) {
+                config.value = "(preset for ${configEntry.pubkey})"
+                presetConfig.value = Optional.of(configEntry.config.get())
+            }
+            currentScreen.intValue = generateScreenId
+            currentPoint.intValue = 4
+        },
+        text = configEntry.pubkey,
         modifier = Modifier
-            .fillMaxWidth()
+            .background(if (ind % 2 == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary)
             .height(50.dp)
-    ) {
-        Text(entry.pubkey)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-            Text(entry.config.toString(), modifier = Modifier.weight(1f))
-            Text(entry.patch.toString(), modifier = Modifier.weight(1f))
-        }
-    }
+            .fillMaxWidth(),
+        fontSize = 18.sp
+    )
 }

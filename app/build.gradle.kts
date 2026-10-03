@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.pshash"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.6-alpha"
+        versionCode = 7
+        versionName = "1.7-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -55,7 +55,6 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.compose.material3.android)
     implementation(libs.compose.material.icons)
-    implementation("io.github.mahdiasd:ComposeFilePicker:1.0.6")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -37,6 +37,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipEntry
@@ -48,6 +49,7 @@ import androidx.core.text.isDigitsOnly
 import com.example.pshash.ui.theme.boxPadding
 import com.example.pshash.ui.theme.cornerRadius
 import kotlinx.coroutines.launch
+import java.util.Optional
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.text.ifEmpty
@@ -63,8 +65,10 @@ fun GeneratePasswordContent(
     choice: MutableState<String>,
     shuffle: MutableState<String>,
     inMnemonic: MutableState<Boolean>,
+    presetConfig: MutableState<Optional<List<Pair<List<Char>, Int>>>>
 ) {
-    val validConfig = availableConfigKeywords.any { it == config.value }
+    val validConfig = config.value == "(preset for ${public.value})" || availableConfigKeywords.any { it == config.value }
+//    val validConfig = config.value.isNotEmpty()
     val validPublic = isValidPublicKey(public.value)
     val validPatch = patch.value.isDigitsOnly()
     val validChoice = isValidPrivateKey(choice.value, inMnemonic.value)
@@ -153,6 +157,7 @@ fun GeneratePasswordContent(
                             choice = choice.value,
                             shuffle = shuffle.value,
                             mnemonic = inMnemonic.value,
+                            presetConfig = presetConfig.value,
                             modifier = modifier
                         )
                     }
@@ -229,8 +234,8 @@ fun PublicSelector(
     ) {
         val keyModifierPressed = Modifier
             .padding(
-                vertical = 14.dp,
-                horizontal = 18.dp
+                vertical = 18.dp,
+                horizontal = 22.dp
             )
         val keyModifierUnpressed = Modifier
             .padding(
@@ -350,8 +355,8 @@ fun PrivateMnemonicSelector(
     ) {
         val keyModifierPressed = Modifier
             .padding(
-                vertical = 14.dp,
-                horizontal = 18.dp
+                vertical = 18.dp,
+                horizontal = 22.dp
             )
         val keyModifierUnpressed = Modifier
             .padding(
@@ -473,10 +478,11 @@ fun PasswordGenerator(
     choice: String,
     shuffle: String,
     mnemonic: Boolean,
+    presetConfig: Optional<List<Pair<List<Char>, Int>>>,
     modifier: Modifier
 ) {
     if (ready) {
-        val password = getPassword(config, public, patch, choice, shuffle, mnemonic)
+        val password = getPassword(config, public, patch, choice, shuffle, presetConfig, mnemonic)
         val clipboardManager = LocalClipboard.current
         val copied = remember { mutableStateOf(false) }
         val show = remember { mutableStateOf(false) }
@@ -544,9 +550,16 @@ fun BottomRow(
         modifier = Modifier
             .fillMaxWidth()
     ) {
+        val buttonModifier = Modifier
+            .height(60.dp)
+            .weight(1f)
+        val fontSize = 20.sp
+
         PlainTextButton(
             onClick = { currentPoint.intValue = prevVal },
-            text = "back"
+            text = "back",
+            modifier = buttonModifier,
+            fontSize
         )
         PlainTextButton(
             onClick = {
@@ -557,15 +570,21 @@ fun BottomRow(
                 choice.value = ""
                 shuffle.value = ""
             },
-            text = "over"
+            text = "over",
+            modifier = buttonModifier,
+            fontSize
         )
         PlainTextButton(
             onClick = { currentPoint.intValue = 6 },
-            text = "last"
+            text = "last",
+            modifier = buttonModifier,
+            fontSize
         )
         PlainTextButton(
             onClick = { currentPoint.intValue = nextVal },
-            text = "next"
+            text = "next",
+            modifier = buttonModifier,
+            fontSize
         )
     }
 }
