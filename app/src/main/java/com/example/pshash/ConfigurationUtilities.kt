@@ -1,12 +1,9 @@
 package com.example.pshash
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
-import java.io.IOException
 import java.util.Optional
 
 class ConfigEntry(val pubkey: String, val config: Optional<List<Pair<List<Char>, Int>>>, val patch: Int)
@@ -17,11 +14,11 @@ fun parseConfig(src: String): Optional<List<ConfigEntry>> {
         if (str.isEmpty()) continue
         if (str[0] == '#') continue
         if (str[0] == ':') return Optional.empty()
-        var start: Int = 0
-        var offset: Int = 0
+        var start = 0
+        var offset = 0
         val len = str.length
         var config: Optional<List<Pair<List<Char>, Int>>> = Optional.empty()
-        var patch: Int = 0
+        var patch = 0
 
         while (offset < len && str[offset] != ':') {
             offset += 1
