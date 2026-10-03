@@ -240,7 +240,7 @@ fun InfoContent (
                     "detail, please refer to the corresponding mathematical paper found on " +
                     "the thornoar/pshash GitHub project under paper/main.pdf.\n" +
                     "\n" +
-                    "The current version is 1.6-alpha."
+                    "The current version is 1.7-alpha."
             )
         }
     }
