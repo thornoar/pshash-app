@@ -91,8 +91,22 @@ fun GeneralConfigContent(
             Column(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(innerPadding).fillMaxSize()
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
             ) {
+                LazyColumn(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    itemsIndexed(configEntries) { ind, item ->
+                        EntryContent(ind, currentScreen, currentPoint, public, patch, config,item, presetConfig)
+                    }
+                }
+
+                HorizontalDivider()
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(boxPadding),
                     verticalAlignment = Alignment.CenterVertically,
@@ -100,12 +114,13 @@ fun GeneralConfigContent(
                         .background(MaterialTheme.colorScheme.secondary)
                         .padding(start = boxPadding, end = boxPadding, bottom = boxPadding)
                         .fillMaxWidth()
+                        .height(80.dp)
                 ) {
                     BoxedTextButton(
                         onClick = {
                             launcher.launch("*/*")
                         },
-                        text = "pick file",
+                        text = "import file",
                         Modifier.weight(1f)
                     )
 
@@ -114,17 +129,6 @@ fun GeneralConfigContent(
 //                        text = "add",
 //                        Modifier.weight(1f)
 //                    )
-                }
-
-                HorizontalDivider()
-
-                LazyColumn(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    itemsIndexed(configEntries) { ind, item ->
-                        EntryContent(ind, currentScreen, currentPoint, public, patch, config,item, presetConfig)
-                    }
                 }
             }
         }

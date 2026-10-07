@@ -196,21 +196,15 @@ fun ConfigSelector(
         verticalArrangement = Arrangement.Center
     ) {
         itemsIndexed(availableConfigKeywords.asList()) { _, item ->
-            TextButton(
+            PlainTextButton(
                 onClick = { text.value = item },
+                text = displayConfiguration(item),
+                fontSize = 16.sp,
                 modifier = Modifier
                     .background(if (item == text.value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary)
                     .fillMaxWidth()
                     .height(50.dp)
-            ) {
-                Text(
-                    text = displayConfiguration(item),
-                    fontSize = 16.sp,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                )
-            }
+            )
         }
     }
     Spacer(
